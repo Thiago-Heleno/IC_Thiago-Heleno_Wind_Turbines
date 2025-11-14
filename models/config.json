@@ -1,0 +1,16 @@
+{
+  "RANDOM_SEED": 42,
+  "WINDOW_HOURS": 48,
+  "PCA_VARIANCE": 0.95,
+  "SEQ_LENGTH": 50,
+  "BATCH_SIZE": 64,
+  "NUM_EPOCHS": 50,
+  "EARLY_STOPPING_PATIENCE": 5,
+  "TRAIN_RATIO": 0.6,
+  "VAL_RATIO": 0.12,
+  "FOCAL_ALPHA": 0.75,
+  "FOCAL_GAMMA": 2.0,
+  "DROPOUT": 0.3,
+  "input_dim": 16,
+  "pca_components": 16
+}
