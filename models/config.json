@@ -10,7 +10,7 @@
   "VAL_RATIO": 0.12,
   "FOCAL_ALPHA": 0.75,
   "FOCAL_GAMMA": 2.0,
-  "DROPOUT": 0.3,
+  "DROPOUT": 0.45,
   "input_dim": 16,
   "pca_components": 16
 }
