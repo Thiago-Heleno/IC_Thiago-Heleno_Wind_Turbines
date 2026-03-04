@@ -1,0 +1,32 @@
+{
+  "threshold_type": "per-feature",
+  "threshold_best_f1_score": 6.927887387985914,
+  "min_features_exceed": 1,
+  "computed_on": "janelas saudaveis de validacao (P95/P99 per-feature) e curva PR (Best-F1 no anomaly score)",
+  "metrics_teste_p95": {
+    "threshold": "Per-feature P95",
+    "f1": 0.19659392895908973,
+    "accuracy": 0.12650367066560317,
+    "precision": 0.10901256911352052,
+    "recall": 1.0
+  },
+  "metrics_teste_p99": {
+    "threshold": "Per-feature P99",
+    "f1": 0.2139350050084569,
+    "accuracy": 0.22079338466296616,
+    "precision": 0.1198936160422591,
+    "recall": 0.9921559667961313
+  },
+  "metrics_teste_best_f1": {
+    "threshold": "Best-F1 (score)",
+    "value": 6.927887387985914,
+    "f1": 0.29246701659809904,
+    "accuracy": 0.594078101346182,
+    "precision": 0.1797102459945257,
+    "recall": 0.7850125656842586
+  },
+  "auc_roc_test": 0.7564035830505151,
+  "auc_pr_test": 0.24498222282776946,
+  "auc_roc_val": 0.6978186369846234,
+  "auc_pr_val": 0.07379968117858735
+}

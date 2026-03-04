@@ -1,0 +1,21 @@
+{
+  "threshold_p95": 0.006740586273372174,
+  "threshold_p99": 0.008755999654531475,
+  "computed_on": "janelas saudaveis de validacao",
+  "metrics_teste_p95": {
+    "threshold": "Percentil 95",
+    "value": 0.006740586273372174,
+    "f1": 0.32170814757608734,
+    "accuracy": 0.8379114080673101,
+    "precision": 0.2572310715037541,
+    "recall": 0.42932096596631764
+  },
+  "metrics_teste_p99": {
+    "threshold": "Percentil 99",
+    "value": 0.008755999654531475,
+    "f1": 0.23710095634008335,
+    "accuracy": 0.8475939417579975,
+    "precision": 0.21483468401628428,
+    "recall": 0.26451643126507857
+  }
+}

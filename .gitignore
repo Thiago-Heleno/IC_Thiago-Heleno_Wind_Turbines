@@ -1,0 +1,25 @@
+# Datasets (large data files)
+Datasets/
+CARE_To_Compare/
+**/datasets/
+
+# Model checkpoints
+*.pt
+*.pth
+*.pkl
+*.pickle
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+.pytest_cache/
+*.egg-info/
+.eggs/
+
+# Logs and temp
+*.log
+.env
+.venv/
+venv/
