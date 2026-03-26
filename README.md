@@ -1,52 +1,114 @@
-# Dataset usado
+# Predicao de Falhas em Turbinas Eolicas com SCADA
 
-Gück, C., & Roelofs, C. (2024). Wind Turbine SCADA Data For Early Fault Detection (v1.0) [Data set]. Zenodo. https://doi.org/10.5281/zenodo.10958775
+Este repositorio concentra os experimentos da pesquisa de deteccao e predicao precoce de falhas em turbinas eolicas usando dados SCADA do dataset CARE_To_Compare.
 
-https://zenodo.org/records/10958775
+O foco esta em dois paradigmas complementares:
 
-# Melhorias a fazer
+- Classificacao supervisionada (CNN, LSTM e CNN-LSTM).
+- Deteccao semi-supervisionada de anomalias (autoencoders treinados em dados saudaveis).
 
-- Remocao de outliers (mas tomar cuidado para nao perder informacao para deteccao de anomalias)
-- Rodar em mais epocas, meu notebook nao aguenta
-- Corrigir data leakage no notebook cnn_lstm_paper (mover split antes da normalizacao e feature selection)
+## Dataset: CARE_To_Compare
 
-# Metricas de teste nos notebooks
+Referencia:
+Guck, C., and Roelofs, C. (2024). Wind Turbine SCADA Data For Early Fault Detection (v1.0). Zenodo. https://doi.org/10.5281/zenodo.10958775
 
-## wind_turbine_anomaly_detection.ipynb (CNN-LSTM Autoencoder v1)
+Resumo pratico usado nos notebooks:
 
-| Threshold | Acuracia | Precisao | Recall | F1-Score |
-|-----------|----------|----------|--------|----------|
-| P95       | 0.8379   | 0.2572   | 0.4293 | 0.3217   |
-| P99       | 0.8476   | 0.2148   | 0.2645 | 0.2371   |
+- 95 datasets (eventos), com 44 eventos anomalos e 51 normais.
+- Frequencia de 10 minutos por amostra.
+- Tres parques eolicos (A, B e C).
+- Para esta pesquisa, os notebooks principais usam Wind Farm C (58 eventos).
+- Cada CSV contem dados de uma turbina em um evento com colunas de sensores, metadados e indicadores operacionais.
 
-## wind_turbine_anomaly_detection_v2.ipynb (CNN-LSTM Autoencoder v2)
+Informacoes importantes do README do CARE incorporadas ao pipeline:
 
-AUC-ROC: 0.6591 | AUC-PR: 0.1833
+- Delimitador padrao dos CSVs: ponto e virgula (;).
+- Rotulo de evento (normal/anomaly) vem de event_info.csv.
+- Eventos possuem intervalo temporal com inicio/fim e IDs de inicio/fim.
 
-| Threshold | Acuracia | Precisao | Recall | F1-Score |
-|-----------|----------|----------|--------|----------|
-| P95       | 0.7785   | 0.1598   | 0.3462 | 0.2186   |
-| P99       | 0.8318   | 0.2084   | 0.3140 | 0.2505   |
-| Best-F1   | 0.9074   | 0.0719   | 0.0029 | 0.0056   |
+## Estrutura do Projeto
 
-## wind_turbine_anomaly_detection_v3.ipynb (CNN-BiLSTM-Attention Autoencoder v3)
+- notebooks/: notebooks principais dos experimentos.
+- anotacoes/: analises tecnicas em Markdown para apresentacao academica.
+- CARE_To_Compare/: dataset.
+- resultados/: artefatos salvos pelos notebooks (modelos, thresholds e metricas).
 
-AUC-ROC: 0.7564 | AUC-PR: 0.2450
+## Notebooks Principais e Objetivo
 
-| Threshold         | Acuracia | Precisao | Recall | F1-Score |
-|-------------------|----------|----------|--------|----------|
-| Per-feature P95   | 0.1265   | 0.1090   | 1.0000 | 0.1966   |
-| Per-feature P99   | 0.2208   | 0.1199   | 0.9922 | 0.2139   |
-| Best-F1 (score)   | 0.5941   | 0.1797   | 0.7850 | 0.2925   |
+### notebooks/wind_turbine_anomaly_detection_v3.ipynb
 
-## wind_turbine_cnn_lstm_paper.ipynb (CNN-LSTM Paper)
+Pipeline semi-supervisionado com autoencoder CNN-BiLSTM-Attention (PyTorch).
 
-| Modelo   | Accuracy (%) | Precision (%) | Recall (%) | F1-Score (%) | AUC-ROC |
-|----------|--------------|---------------|------------|--------------|---------|
-| CNN      | 73.37        | 79.09         | 84.60      | 81.75        | 0.69    |
-| LSTM     | 37.40        | 66.67         | 22.38      | 33.51        | 0.55    |
-| CNN-LSTM | 65.76        | 70.27         | 89.16      | 78.59        | 0.68    |
+Decisoes-chave:
 
-# Possiveis problemas
+- Split temporal global 70/15/15.
+- Scaler MinMax ajustado apenas em amostras saudaveis de treino.
+- Selecao de features nao-supervisionada em 3 etapas (variancia, correlacao com variaveis operacionais, remocao de redundancia).
+- Janela deslizante de 36 passos (6 horas).
+- Deteccao por erro de reconstrucao por feature (P95/P99) e score continuo max(error_i/threshold_i).
 
-- **Data leakage no notebook cnn_lstm_paper**: MinMaxScaler, XGBoost feature selection e calculo de undersampling sao feitos sobre todos os dados antes do split train/val/test. A normalizacao e selecao de features deveriam ser feitas apenas no conjunto de treino.
+### notebooks/wind_turbine_autoencoder_keras_pipeline.ipynb
+
+Pipeline com Keras/TensorFlow, DataPreprocessor em Pipeline scikit-learn, threshold adaptativo e ARCANA.
+
+Decisoes-chave:
+
+- Ingestao robusta + normalizacao de schema CARE (timestamp/status_id).
+- Split temporal em treino de AE e calibracao.
+- Preprocessamento com clipping, imputacao temporal, transformacao angular, derivada de contadores, rolling features e padronizacao.
+- Autoencoder MLP simetrico otimizado com Optuna.
+- Threshold fixo e adaptativo (rmse_pred + gamma) com regressao auxiliar.
+- CARE Score agregado por sub-dataset.
+
+### notebooks/wind_turbine_cnn_lstm_paper.ipynb
+
+Reproducao da estrategia do artigo Qi et al. (Energies 2024) para classificacao supervisionada.
+
+Decisoes-chave:
+
+- Split por evento (event-level) 70/15/15 para evitar leakage.
+- Normalizacao com estatisticas de treino normal.
+- Selecao de features por XGBoost (top 30%).
+- Janela de 36 passos e undersampling apenas no treino.
+- Comparacao CNN vs LSTM vs CNN-LSTM com ajuste de threshold na validacao.
+
+## Pipeline da Pesquisa (visao integrada)
+
+1. Ingestao dos CSVs por evento e unificacao de metadados.
+2. Definicao do tipo de split (temporal global ou por evento, dependendo do experimento).
+3. Pre-processamento sem vazamento (fit apenas no treino apropriado).
+4. Definicao de X e Y da rede:
+   - Autoencoder v3: X = janela [36, n_features_selecionadas].
+     Y (treino do AE) = o proprio X da janela (reconstrucao).
+     Y (avaliacao de deteccao) = label binario da janela (0 normal, 1 anomalia).
+   - Keras pipeline: X = vetor tabular pre-processado por timestamp.
+     Y (treino do AE) = o proprio X tabular (reconstrucao).
+     Y (calibracao/avaliacao) = label binario (event_label ou status_id mapeado para 0/1).
+   - CNN-LSTM paper: X = janela [36, n_features_top30].
+     Y = classe da janela (0 normal, 1 anomalia).
+5. Treinamento do modelo (AE ou classificador) com seeds fixas.
+6. Calibracao de threshold em validacao (quando aplicavel).
+7. Avaliacao final em teste com metricas e analise por evento/dataset.
+8. Exportacao de artefatos para reproducibilidade.
+
+## Principios Metodologicos
+
+- Evitar leakage:
+  - Split definido antes do fit de scaler/seletores.
+  - Val/Test sem undersampling artificial na avaliacao final.
+- Consistencia temporal:
+  - Janelas respeitam ordenacao cronologica por evento.
+- Robustez numerica:
+  - Tratamento de NaN/Inf, clipping e imputacao.
+- Reproducibilidade:
+  - Seeds fixas e configuracao deterministica quando possivel.
+
+## Dependencias
+
+Arquivo de dependencias em notebooks/requirements.txt.
+
+## Documentacao Tecnica Complementar
+
+- anotacoes/analise_autoencoder_v3.md
+- anotacoes/analise_autoencoder_keras.md
+- anotacoes/analise_cnn_lstm_paper.md
