@@ -1,0 +1,9 @@
+{
+  "files.watcherExclude": {
+    "**/CARE_To_Compare/**": true,
+    "**/CARE_To_Compare_Data.zip": true
+  },
+  "search.exclude": {
+    "**/CARE_To_Compare/**": true
+  }
+}

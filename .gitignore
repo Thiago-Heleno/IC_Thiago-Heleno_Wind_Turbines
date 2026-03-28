@@ -2,6 +2,10 @@
 Datasets/
 CARE_To_Compare/
 **/datasets/
+*.zip
+
+# Generated logs
+notebooks/training_log.txt
 
 # Model checkpoints
 *.pt

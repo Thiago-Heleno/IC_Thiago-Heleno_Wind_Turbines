@@ -1,5 +1,7 @@
 # Wind Turbine Anomaly Detection - Dependencies
 # Install: pip install -r requirements.txt
+#
+# Ambiente conda sugerido: conda activate theleno
 
 numpy>=1.24.0
 pandas>=2.0.0
@@ -8,3 +10,11 @@ seaborn>=0.12.0
 scikit-learn>=1.3.0
 torch>=2.0.0
 xgboost>=1.7.0
+joblib>=1.3.0
+
+# Keras pipeline notebook
+tensorflow>=2.15.0,<2.20
+optuna>=3.0.0
+
+# Jupyter / IDE kernels
+ipykernel>=6.0.0
