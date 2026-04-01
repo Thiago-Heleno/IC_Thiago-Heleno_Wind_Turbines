@@ -628,8 +628,6 @@ def build_multilayer_autoencoder(input_dim: int, n_layers: int, code_size: int, 
 def build_regression_nn_for_trial(input_dim: int, units: int = 32, learning_rate: float = 1e-3):
     inp = keras.Input(shape=(input_dim,))
     x = layers.Dense(units, activation="relu")(inp)
-    x = layers.Dense(units, activation="relu")(x)
-    x = layers.Dense(units, activation="relu")(x)
     out = layers.Dense(1, activation="linear")(x)
     model = keras.Model(inp, out, name="RegressionNNTrial")
     model.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate), loss="mse", metrics=["mae"])
@@ -644,6 +642,35 @@ def temporal_split_internal(X: np.ndarray, val_frac: float = 0.25) -> Tuple[np.n
 
 def rmse_per_sample(y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
     return np.sqrt(np.mean((y_true - y_pred) ** 2, axis=1))
+
+
+class ScoreStandardizer:
+    """Padroniza anomaly scores (RMSE) via z-score fitado nos dados de treino."""
+
+    def __init__(self):
+        self.mu_ = 0.0
+        self.sigma_ = 1.0
+
+    def fit(self, scores: np.ndarray) -> "ScoreStandardizer":
+        self.mu_ = float(np.mean(scores))
+        self.sigma_ = float(np.std(scores))
+        if self.sigma_ < 1e-12:
+            self.sigma_ = 1.0
+        return self
+
+    def transform(self, scores: np.ndarray) -> np.ndarray:
+        return (scores - self.mu_) / self.sigma_
+
+
+def smooth_scores(scores: np.ndarray, window: int = 5) -> np.ndarray:
+    """Suaviza anomaly scores via moving average centrado."""
+    if window <= 1:
+        return scores
+    return pd.Series(scores).rolling(window, center=True, min_periods=1).mean().values
+
+
+SMOOTHING_WINDOW = int(os.environ.get("SMOOTHING_WINDOW", "5"))
+CRITICALITY_THRESHOLD = int(os.environ.get("CRITICALITY_THRESHOLD", "6"))
 
 
 def _release_tf_memory():
@@ -662,7 +689,7 @@ def objective_ae(trial: optuna.Trial) -> float:
         code_size = trial.suggest_int("code_size", 8, 64)
         learning_rate = trial.suggest_float("learning_rate", 1e-4, 1e-2, log=True)
         decay_rate = trial.suggest_float("decay_rate", 0.90, 0.999)
-        gamma = trial.suggest_float("gamma", 0.05, 1.0)
+        gamma = trial.suggest_float("gamma", 0.01, 0.5)
 
         Xtr, Xval = temporal_split_internal(X_train_ae_proc, val_frac=0.25)
         model = build_multilayer_autoencoder(
@@ -687,7 +714,14 @@ def objective_ae(trial: optuna.Trial) -> float:
 
         y_cal = infer_binary_labels(df_cal)
         recon_cal = model.predict(X_cal_proc, verbose=0)
-        rmse_cal = rmse_per_sample(X_cal_proc, recon_cal)
+        rmse_cal_raw = rmse_per_sample(X_cal_proc, recon_cal)
+
+        # Padroniza RMSE via z-score (fitado no subset normal da calibracao)
+        recon_tr_trial = model.predict(Xtr, verbose=0)
+        rmse_tr_trial = rmse_per_sample(Xtr, recon_tr_trial)
+        trial_scaler = ScoreStandardizer().fit(rmse_tr_trial)
+        rmse_cal = smooth_scores(trial_scaler.transform(rmse_cal_raw), window=SMOOTHING_WINDOW)
+        del recon_tr_trial, rmse_tr_trial
 
         # Treina RegressionNN no proprio trial para avaliar threshold adaptativo real.
         normal_cal_mask = ~df_cal["status_id"].isin([3, 4]).to_numpy()
@@ -705,11 +739,11 @@ def objective_ae(trial: optuna.Trial) -> float:
             verbose=0,
             callbacks=[keras.callbacks.EarlyStopping(monitor="val_loss", patience=8, restore_best_weights=True)],
         )
-        rmse_pred_cal = reg_nn_trial.predict(X_cal_proc, verbose=0).reshape(-1)
+        rmse_pred_cal = trial_scaler.transform(reg_nn_trial.predict(X_cal_proc, verbose=0).reshape(-1))
         pred = (rmse_cal > (rmse_pred_cal + gamma)).astype(int)
 
         if len(np.unique(y_cal)) > 1:
-            score = fbeta_score(y_cal, pred, beta=0.5, zero_division=0)
+            score = fbeta_score(y_cal, pred, beta=2.0, zero_division=0)
         else:
             normal_mask = (y_cal == 0)
             fpr = pred[normal_mask].mean() if normal_mask.any() else 1.0
@@ -791,11 +825,20 @@ recon_train = final_model.predict(X_train_ae_proc, verbose=0)
 recon_cal = final_model.predict(X_cal_proc, verbose=0)
 recon_test = final_model.predict(X_test_proc, verbose=0)
 
-rmse_train = rmse_per_sample(X_train_ae_proc, recon_train)
-rmse_cal = rmse_per_sample(X_cal_proc, recon_cal)
-rmse_test = rmse_per_sample(X_test_proc, recon_test)
+rmse_train_raw = rmse_per_sample(X_train_ae_proc, recon_train)
+rmse_cal_raw = rmse_per_sample(X_cal_proc, recon_cal)
+rmse_test_raw = rmse_per_sample(X_test_proc, recon_test)
 del recon_train, recon_cal, recon_test
 gc.collect()
+
+# FIX 1: Padroniza RMSE via z-score fitado no treino (dados normais)
+score_scaler = ScoreStandardizer().fit(rmse_train_raw)
+rmse_train = smooth_scores(score_scaler.transform(rmse_train_raw), window=SMOOTHING_WINDOW)
+rmse_cal = smooth_scores(score_scaler.transform(rmse_cal_raw), window=SMOOTHING_WINDOW)
+rmse_test = smooth_scores(score_scaler.transform(rmse_test_raw), window=SMOOTHING_WINDOW)
+print(f"Score standardization: mu={score_scaler.mu_:.4f}, sigma={score_scaler.sigma_:.4f}")
+print(f"rmse_train (scaled): mean={rmse_train.mean():.4f}, std={rmse_train.std():.4f}")
+print(f"rmse_test  (scaled): mean={rmse_test.mean():.4f}, std={rmse_test.std():.4f}")
 
 
 # === Cell 10 ===
@@ -829,14 +872,12 @@ def best_fixed_threshold_by_fbeta(y_true: np.ndarray, scores: np.ndarray, beta: 
 y_cal = infer_binary_labels(df_cal)
 
 fixed_threshold_p95 = float(np.quantile(rmse_cal[df_cal["status_id"].isin([0, 1, 2])], 0.95)) if (df_cal["status_id"].isin([0, 1, 2]).any()) else float(np.quantile(rmse_cal, 0.95))
-fixed_threshold_fbeta = best_fixed_threshold_by_fbeta(y_cal, rmse_cal, beta=0.5)
+fixed_threshold_fbeta = best_fixed_threshold_by_fbeta(y_cal, rmse_cal, beta=2.0)
 
 
 def build_regression_nn(input_dim: int, units: int = 32, learning_rate: float = 1e-3):
     inp = keras.Input(shape=(input_dim,))
     x = layers.Dense(units, activation="relu")(inp)
-    x = layers.Dense(units, activation="relu")(x)
-    x = layers.Dense(units, activation="relu")(x)
     out = layers.Dense(1, activation="linear")(x)
     model = keras.Model(inp, out, name="RegressionNN")
     model.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate), loss="mse", metrics=["mae"])
@@ -864,10 +905,10 @@ rmse_pred_cal = reg_nn.predict(X_cal_proc, verbose=0).reshape(-1)
 # gamma otimizado via Optuna no conjunto de calibracao
 
 def objective_gamma(trial: optuna.Trial) -> float:
-    gamma = trial.suggest_float("gamma", 0.05, 1.0)
+    gamma = trial.suggest_float("gamma", 0.01, 0.5)
     pred = (rmse_cal > (rmse_pred_cal + gamma)).astype(int)
     if len(np.unique(y_cal)) > 1:
-        return float(fbeta_score(y_cal, pred, beta=0.5, zero_division=0))
+        return float(fbeta_score(y_cal, pred, beta=2.0, zero_division=0))
     normal_pred_rate = pred[normal_cal_mask.to_numpy()].mean() if normal_cal_mask.any() else 1.0
     return float(max(0.0, 1.0 - normal_pred_rate))
 
@@ -887,16 +928,16 @@ def arcana_loss(model: keras.Model, x: tf.Tensor, b: tf.Variable, alpha: float):
     x_bias = x + b
     recon = model(x_bias, training=False)
     recon_term = tf.reduce_mean(tf.square(recon - x_bias), axis=1)
-    bias_term = tf.reduce_mean(tf.square(b), axis=1)
-    return alpha * recon_term + (1.0 - alpha) * bias_term
+    bias_term = tf.reduce_mean(tf.abs(b), axis=1)
+    return (1.0 - alpha) * recon_term + alpha * bias_term
 
 
 def run_arcana_for_sample(
     model: keras.Model,
     x: np.ndarray,
     alpha: float = 0.8,
-    num_iter: int = 1000,
-    lr: float = 1e-2,
+    num_iter: int = 400,
+    lr: float = 1e-3,
     init_x_bias: str = "recon",
 ) -> np.ndarray:
     x_tf = tf.convert_to_tensor(x.reshape(1, -1), dtype=tf.float32)
@@ -930,7 +971,7 @@ def arcana_on_anomalies(
     anomaly_mask: np.ndarray,
     feature_names: List[str],
     alpha: float = 0.8,
-    num_iter: int = 1000,
+    num_iter: int = 400,
     top_n: int = 15,
     max_samples: int = 100,
 ) -> pd.DataFrame:
@@ -966,7 +1007,7 @@ def predict_with_thresholds(
     return pred_fixed, pred_adapt
 
 
-def compute_criticality(alarm_flags: np.ndarray, status_is_anomalous: np.ndarray, threshold: int = 72) -> Tuple[np.ndarray, bool]:
+def compute_criticality(alarm_flags: np.ndarray, status_is_anomalous: np.ndarray, threshold: int = 6) -> Tuple[np.ndarray, bool]:
     crit = np.zeros(len(alarm_flags), dtype=int)
     for i in range(1, len(alarm_flags)):
         if status_is_anomalous[i]:
@@ -1045,7 +1086,7 @@ for source_file, g in df_eval.groupby("source_file", sort=False):
 
     # Criticality e alarme no nivel dataset
     status_is_anomalous = g["status_id"].isin([3, 4]).to_numpy()
-    crit, alarm = compute_criticality(gp.astype(bool), status_is_anomalous, threshold=72)
+    crit, alarm = compute_criticality(gp.astype(bool), status_is_anomalous, threshold=CRITICALITY_THRESHOLD)
 
     # WS por dataset anomalo: usar janela de evento quando metadados existirem.
     event_window_mask = non_padding.copy()
@@ -1225,7 +1266,10 @@ threshold_params = {
     "fixed_threshold_fbeta": float(fixed_threshold_fbeta),
     "gamma": float(gamma_best),
     "adaptive_formula": "rmse_pred + gamma",
-    "regression_nn": {"layers": 3, "units": 32, "optimizer": "Adam"},
+    "regression_nn": {"layers": 1, "units": 32, "optimizer": "Adam"},
+    "score_standardization": {"mu": float(score_scaler.mu_), "sigma": float(score_scaler.sigma_)},
+    "smoothing_window": SMOOTHING_WINDOW,
+    "criticality_threshold": CRITICALITY_THRESHOLD,
 }
 with open(os.path.join(ARTIFACTS_DIR, "threshold_params.json"), "w", encoding="utf-8") as f:
     json.dump(threshold_params, f, indent=2)
