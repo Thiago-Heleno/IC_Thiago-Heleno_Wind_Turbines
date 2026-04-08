@@ -1,0 +1,586 @@
+Dispositivo: cuda
+GPU: NVIDIA RTX A6000
+CUDA: 13.0
+Recursos (lab): CUDA_VISIBLE_DEVICES=1  LAB_CPU_THREADS=6
+
+Versoes: torch=2.11.0+cu130, numpy=2.1.3, pandas=3.0.1, sklearn=1.8.0
+
+Caminhos: PROJECT_ROOT=/mnt/hdd/home/theleno/IC_Thiago-Heleno_Wind_Turbines
+  BASE_DIR=/mnt/hdd/home/theleno/IC_Thiago-Heleno_Wind_Turbines/CARE_To_Compare/Wind Farm C
+
+Mixed Precision (AMP): ativado — treinamento mais rapido e menor uso de VRAM
+
+Janela temporal: 36 steps (6 horas)
+Split: 70% treino / 15% validacao / 15% teste
+Selecao de features: nao-supervisionada (variancia + correlacao)
+  Variance threshold: 0.0001
+  Correlacao minima c/ operacionais: 0.1
+  Correlacao max entre features: 0.95
+Batch size: 64
+Epochs: 100 (patience=15)
+Dropout: 0.15
+Loss: MAE (L1)
+MIN_FEATURES_EXCEED: 10  # ~N*5%% para P95; calibre via validacao
+Scheduler: ReduceLROnPlateau (factor=0.5, patience=3)
+Checkpoint: a cada 5 epocas
+FAST_MODE: desativado (dados completos)
+Total de eventos: 58
+  Anomalias: 27
+  Normais:   31
+Total de arquivos CSV encontrados: 58
+Passo 1: coletando timestamps para definir cortes do split temporal...
+  Amostras totais: 3,187,136
+  Corte treino/val: 2025-10-20 12:10:00
+  Corte val/teste:  2027-05-13 08:10:00
+
+Passo 2: processamento por arquivo (ffill + labeling + split)...
+  AVISO: evento 36 tem 161088 NaN apos ffill/bfill — preenchendo com 0
+  Processados: 20/58
+  Processados: 40/58
+  Processados: 58/58
+
+Concatenando e ordenando splits...
+  Treino    : 2,230,995 amostras ( 70.0%) | Anomalias: 40,676 | Saudaveis: 1,950,023 | Mem: 8,744 MB
+  Validacao : 478,065 amostras ( 15.0%) | Anomalias: 13,855 | Saudaveis: 423,983 | Mem: 1,874 MB
+  Teste     : 478,076 amostras ( 15.0%) | Anomalias: 6,366 | Saudaveis: 421,385 | Mem: 1,874 MB
+
+Verificacao de eventos cruzando cortes do split temporal:
+  Eventos cruzando corte treino/val: 5/58
+  Eventos cruzando corte val/teste:  7/58
+  NOTA: eventos cruzando cortes terao seus timesteps divididos entre splits.
+  Isso e esperado no split temporal global e NAO configura vazamento de dados.
+  Para splits estritamente por evento, use event_id como chave de divisao.
+Distribuicao de labels (todos os splits combinados):
+  Saudavel (0):  3,126,239 (98.1%)
+  Anomalia (1):  60,897 (1.9%)
+
+Amostras estritamente saudaveis (label=0 e status normal/idling): 2,795,391 (87.7%)
+
+Distribuicao de status_type_id:
+status_type_id
+0    2843548
+3     246764
+4      20036
+5      76788
+Verificacao da divisao temporal (ja realizada na etapa de carregamento):
+
+Treino    : 2,230,995 amostras ( 70.0%) | Anomalias: 40,676 | Saudaveis: 1,950,023 | Periodo: 2014-10-13 08:40:00 -- 2025-10-20 12:00:00
+Validacao : 478,065 amostras ( 15.0%) | Anomalias: 13,855 | Saudaveis: 423,983 | Periodo: 2025-10-20 12:10:00 -- 2027-05-13 08:00:00
+Teste     : 478,076 amostras ( 15.0%) | Anomalias: 6,366 | Saudaveis: 421,385 | Periodo: 2027-05-13 08:10:00 -- 2029-05-11 05:40:00
+
+Corte treino/val: 2025-10-20 12:10:00
+Corte val/teste:  2027-05-13 08:10:00
+Total de features de sensores: 952
+Amostras saudaveis de treino para ajuste do scaler: 1,950,023 (87.4% do treino)
+Scaler ajustado via partial_fit (somente amostras saudaveis de treino)
+  Treino normalizado | Valores fora de [0,1]: 588,582 (0.0277%)
+  Validacao normalizado | Valores fora de [0,1]: 200,459 (0.0440%)
+  Teste normalizado | Valores fora de [0,1]: 476,077 (0.1046%)
+  Treino     - min: -327.6800, max: 3240.5757, media: 0.3879
+  Validacao  - min: -327.6800, max: 423.8800, media: 0.3814
+  Teste      - min: -327.6800, max: 3897429.7500, media: 0.4115
+
+Normalizacao concluida (scaler.transform() em chunks, sem clipping)
+Amostras saudaveis de treino para selecao de features: 1,950,023
+
+[Passo 1] Filtro de variancia (threshold=0.0001):
+  Removidas: 46 features com variancia ~0
+  Restantes: 906
+
+[Passo 2] Correlacao com variaveis operacionais:
+  Variaveis operacionais encontradas: 32
+    - power_2_avg
+    - power_2_max
+    - power_2_min
+    - power_2_std
+    - power_5_avg
+    - power_5_max
+    - power_5_min
+    - power_5_std
+    - power_6_avg
+    - power_6_max
+    - power_6_min
+    - power_6_std
+    - sensor_144_avg
+    - sensor_144_max
+    - sensor_144_min
+    - sensor_144_std
+    - sensor_145_avg
+    - sensor_145_max
+    - sensor_145_min
+    - sensor_145_std
+    - wind_speed_235_avg
+    - wind_speed_235_max
+    - wind_speed_235_min
+    - wind_speed_235_std
+    - wind_speed_236_avg
+    - wind_speed_236_max
+    - wind_speed_236_min
+    - wind_speed_236_std
+    - wind_speed_237_avg
+    - wind_speed_237_max
+    - wind_speed_237_min
+    - wind_speed_237_std
+  Removidas: 129 features com baixa correlacao operacional
+  Restantes: 777
+
+[Passo 3] Remocao de redundancia (threshold=0.95):
+  Removidas: 472 features redundantes
+  Features finais selecionadas: 305
+
+============================================================
+RESUMO DA SELECAO DE FEATURES
+============================================================
+  Features originais:         952
+  Apos filtro de variancia:   906 (-46)
+  Apos filtro de correlacao:  777 (-129)
+  Apos remocao redundancia:   305 (-472)
+  Reducao total:              647 features removidas (68.0%)
+
+Top 20 features por correlacao com operacionais:
+           feature  max_abs_corr_operational  variance  selected
+0     power_17_avg                  0.999902  0.091526     False
+1     power_17_max                  0.999787  0.092622     False
+2     sensor_0_avg                  0.999530  0.091078     False
+3    sensor_57_avg                  0.999515  0.092560     False
+4   sensor_129_avg                  0.999493  0.090567     False
+5   sensor_128_avg                  0.999446  0.088061     False
+6   sensor_127_avg                  0.999432  0.089877     False
+7     power_17_min                  0.999415  0.077184     False
+8    sensor_56_avg                  0.999389  0.089863     False
+9     sensor_0_max                  0.999173  0.083053     False
+10   sensor_57_max                  0.999152  0.081630     False
+11   sensor_56_max                  0.999119  0.078801     False
+12    sensor_0_min                  0.999091  0.080914     False
+13   sensor_57_min                  0.999038  0.081963     False
+14   sensor_56_min                  0.998917  0.078736     False
+15  sensor_129_min                  0.998833  0.057394     False
+16  sensor_127_min                  0.998788  0.055373     False
+17  sensor_128_min                  0.998755  0.055277     False
+18    power_17_std                  0.998741  0.006750     False
+19  sensor_128_max                  0.998520  0.025968     False
+
+MIN_FEATURES_EXCEED (dinamico): 15 = max(1, int(305 * 0.05))
+  Interpretacao: janela classificada como anomalia se >= 15 features excederem o threshold P95/P99.
+  Isso corresponde a ~5% das 305 features, controlando FP aleatorios do P95.
+Dimensao apos selecao de features:
+  Treino:    (2230995, 309)
+  Validacao: (478065, 309)
+  Teste:     (478076, 309)
+Indices de janelas criados (window_size=36, features=305):
+  Treino    : 2,229,455 janelas | Anomalias: 41,236 | Saudaveis: 1,535,633
+  Validacao : 477,575 janelas | Anomalias: 13,995 | Saudaveis: 327,668
+  Teste     : 477,656 janelas | Anomalias: 6,471 | Saudaveis: 329,372
+
+Memoria: ~2.7 GB (treino) vs ~98 GB se janelas fossem materializadas
+Janelas saudaveis para treinamento do autoencoder:
+  Treino:    (1535633, 36, 305)
+  Validacao: (327668, 36, 305)
+
+Dimensoes de entrada do modelo:
+  Timesteps:  36
+  Features:   305
+CNNBiLSTMAttentionAutoencoder(
+  (enc_conv1): Conv1d(305, 64, kernel_size=(3,), stride=(1,), padding=(1,))
+  (enc_conv2): Conv1d(64, 128, kernel_size=(3,), stride=(1,), padding=(1,))
+  (enc_lstm1): LSTM(128, 128, batch_first=True, bidirectional=True)
+  (enc_lstm2): LSTM(256, 64, batch_first=True, bidirectional=True)
+  (attention): MultiheadAttention(
+    (out_proj): NonDynamicallyQuantizableLinear(in_features=128, out_features=128, bias=True)
+  )
+  (attn_norm): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+  (dec_lstm1): LSTM(128, 128, batch_first=True)
+  (dec_lstm2): LSTM(128, 128, batch_first=True)
+  (dropout): Dropout(p=0.15, inplace=False)
+  (dec_fc1): Linear(in_features=128, out_features=256, bias=True)
+  (dec_fc2): Linear(in_features=256, out_features=305, bias=True)
+  (selu): SELU()
+)
+
+Parametros treinaveis: 954,289
+Dropout rate: 0.15
+Carregando checkpoint: /mnt/hdd/home/theleno/IC_Thiago-Heleno_Wind_Turbines/resultados/results_cnn_lstm_anomaly/checkpoints/checkpoint_epoch_100.pth
+  Epoca: 100 | Melhor val_loss registrado: 0.011814
+  Treinamento pulado — usando modelo do checkpoint.
+
+Melhor val_loss (do checkpoint): 0.011814
+Erros de reconstrucao por feature (MAE) -- janelas saudaveis:
+  Treino    - media global: 0.014431, std global: 0.018603, max feature media: 0.217765
+  Validacao - media global: 0.014548, std global: 0.017966, max feature media: 0.227747
+Thresholds per-feature (baseados nas janelas saudaveis de validacao):
+  P95 -- min: 0.000152, media: 0.039704, max: 0.377293
+  P99 -- min: 0.000559, media: 0.070088, max: 0.540120
+  Shape: (305,) features
+
+Anomaly scores (max-ratio com P95):
+  Validacao - media: 62.1452, max: 14534.6123
+  Teste     - media: 91.5996, max: 66140.2891
+Threshold otimizado via curva Precision-Recall (no anomaly score de validacao):
+  Threshold Best-F1 (score): 2.5386
+  F1 no ponto otimo: 0.0944
+  Precisao: 0.0499
+  Recall:   0.8723
+
+Resumo dos thresholds:
+  Per-feature P95: vetor (305,) -- deteccao via MIN_FEATURES_EXCEED=15
+  Per-feature P99: vetor (305,) -- deteccao via MIN_FEATURES_EXCEED=15
+  Best-F1 (score): 2.5386 -- aplicado no anomaly score (max-ratio)
+METRICAS INDEPENDENTES DE THRESHOLD (anomaly score = max-ratio)
+=================================================================
+  Teste     - AUC-ROC: 0.8643 | AUC-PR: 0.0968
+  Validacao - AUC-ROC: 0.6744 | AUC-PR: 0.0432
+
+
+AVALIACAO NO CONJUNTO DE TESTE
+=================================================================
+
+=================================================================
+  Threshold: Per-feature P95 (per-feature, MIN_FEATURES_EXCEED=15)
+=================================================================
+  Acuracia:   0.2149
+  Precisao:   0.0164
+  Recall:     0.9646
+  F1-Score:   0.0322
+  Predicoes positivas: 381028 / 477656
+  VP: 6242  |  FP: 374786  |  FN: 229  |  VN: 96399
+  Media features excedidas (anomalias): 107.9 / 305
+
+=================================================================
+  Threshold: Per-feature P99 (per-feature, MIN_FEATURES_EXCEED=15)
+=================================================================
+  Acuracia:   0.6093
+  Precisao:   0.0299
+  Recall:     0.8846
+  F1-Score:   0.0578
+  Predicoes positivas: 191589 / 477656
+  VP: 5724  |  FP: 185865  |  FN: 747  |  VN: 285320
+  Media features excedidas (anomalias): 63.1 / 305
+
+=================================================================
+  Threshold: Best-F1 (score) = 2.5386 (anomaly score)
+=================================================================
+  Acuracia:   0.2020
+  Precisao:   0.0159
+  Recall:     0.9499
+  F1-Score:   0.0312
+  Predicoes positivas: 387011 / 477656
+  VP: 6147  |  FP: 380864  |  FN: 324  |  VN: 90321
+
+
+AVALIACAO NO CONJUNTO DE VALIDACAO
+=================================================================
+
+=================================================================
+  Threshold: Per-feature P95 (per-feature, MIN_FEATURES_EXCEED=15)
+=================================================================
+  Acuracia:   0.4873
+  Precisao:   0.0413
+  Recall:     0.7426
+  F1-Score:   0.0782
+  Predicoes positivas: 251642 / 477575
+  VP: 10393  |  FP: 241249  |  FN: 3602  |  VN: 222331
+  Media features excedidas (anomalias): 35.3 / 305
+
+=================================================================
+  Threshold: Per-feature P99 (per-feature, MIN_FEATURES_EXCEED=15)
+=================================================================
+  Acuracia:   0.8098
+  Precisao:   0.0325
+  Recall:     0.1909
+  F1-Score:   0.0556
+  Predicoes positivas: 82194 / 477575
+  VP: 2672  |  FP: 79522  |  FN: 11323  |  VN: 384058
+  Media features excedidas (anomalias): 14.9 / 305
+
+=================================================================
+  Threshold: Best-F1 (score) = 2.5386 (anomaly score)
+=================================================================
+  Acuracia:   0.5093
+  Precisao:   0.0499
+  Recall:     0.8722
+  F1-Score:   0.0943
+  Predicoes positivas: 244776 / 477575
+  VP: 12207  |  FP: 232569  |  FN: 1788  |  VN: 231011
+=== DIAGNOSTICO DA RECONSTRUCAO ===
+
+Shape: original=(36, 305), reconstruido=(36, 305)
+
+Variacao temporal (std ao longo de 36 timesteps):
+  Original  - std media: 0.037095, max: 0.473674
+  Recon     - std media: 0.030928, max: 0.436769
+  Ratio recon/orig (std): 0.8337
+
+Features com reconstrucao 'flat'       (std < 0.010): 145/305 (47.5%)
+Features com reconstrucao 'muito flat'  (std < 0.001): 52/305 (17.0%)
+
+Range Original - min: 0.0000, max: 1.0000, mean: 0.3301
+Range Recon    - min: -0.0156, max: 1.0030, mean: 0.3291
+
+[OK] Reconstrucao com boa variacao temporal (ratio >= 0.7).
+
+Top 5 features com ratio mais proximo de 1.0 (melhor reconstrucao):
+  sensor_209_max                            orig_std=0.0152  recon_std=0.0152  ratio=0.999
+  sensor_49_avg                             orig_std=0.0118  recon_std=0.0118  ratio=1.002
+  sensor_25_std                             orig_std=0.0822  recon_std=0.0824  ratio=1.003
+  sensor_50_avg                             orig_std=0.0115  recon_std=0.0115  ratio=0.995
+  sensor_166_std                            orig_std=0.0164  recon_std=0.0163  ratio=0.994
+
+Top 5 features com reconstrucao mais flat (menor recon_std):
+  sensor_97_std                             orig_std=0.0000  recon_std=0.000025
+  sensor_211_std                            orig_std=0.0251  recon_std=0.000031
+  sensor_98_std                             orig_std=0.0000  recon_std=0.000032
+  sensor_98_min                             orig_std=0.0000  recon_std=0.000039
+  sensor_99_min                             orig_std=0.0000  recon_std=0.000058
+AVALIACAO POR EVENTO -- CONJUNTO DE TESTE
+
+Avaliacao por evento -- Per-feature P95 (MIN_FEATURES_EXCEED=15)
+=================================================================
+  Evento |  Janelas Anom |  Detectadas |  Taxa Deteccao
+-----------------------------------------------------------------
+      16 |          2195 |        2105 |         95.9%
+      30 |          3298 |        3159 |         95.8%
+      66 |           978 |         978 |        100.0%
+-----------------------------------------------------------------
+  Media (por evento):     97.2%
+  Media (ponderada):      96.5%
+  Eventos com deteccao>0: 3/3
+
+Avaliacao por evento -- Per-feature P99 (MIN_FEATURES_EXCEED=15)
+=================================================================
+  Evento |  Janelas Anom |  Detectadas |  Taxa Deteccao
+-----------------------------------------------------------------
+      16 |          2195 |        1910 |         87.0%
+      30 |          3298 |        2993 |         90.8%
+      66 |           978 |         821 |         83.9%
+-----------------------------------------------------------------
+  Media (por evento):     87.2%
+  Media (ponderada):      88.5%
+  Eventos com deteccao>0: 3/3
+
+=== SECAO 10: ANALISE DE FEATURES INFORMATIVAS ===
+
+Features informativas (std erro > 0.01): 144/305 (47.2%)
+Features planas (std erro <= 0.01): 161/305 (52.8%)
+
+Calculando AUROC por feature (validacao)...
+AUROC calculado em 37.0s
+Features discriminativas (AUROC > 0.55): 92/305 (30.2%)
+AUROC medio (todas): 0.5151
+AUROC medio (informativas): 0.5142
+AUROC top 10:
+  [ 36] sensor_126_avg                                AUROC=0.8730  std_err=0.06137
+  [ 38] sensor_126_min                                AUROC=0.8665  std_err=0.05227
+  [295] sensor_99_min                                 AUROC=0.8193  std_err=0.00992
+  [ 37] sensor_126_max                                AUROC=0.8076  std_err=0.06631
+  [130] sensor_203_max                                AUROC=0.7966  std_err=0.00132
+  [249] sensor_81_max                                 AUROC=0.7961  std_err=0.01335
+  [303] wind_speed_237_min                            AUROC=0.7931  std_err=0.04424
+  [ 39] sensor_126_std                                AUROC=0.7831  std_err=0.03098
+  [137] sensor_210_std                                AUROC=0.7751  std_err=0.00766
+  [150] sensor_225_avg                                AUROC=0.7396  std_err=0.02427
+
+Mascaras salvas: /mnt/hdd/home/theleno/IC_Thiago-Heleno_Wind_Turbines/resultados/results_cnn_lstm_anomaly/feature_masks.npz
+
+=== SECAO 11: SCORE PONDERADO + BETA-F1 ===
+
+Pesos por AUROC (> 0.5): nao-zero=162/305, max=0.3730, media=0.0827
+
+Score ponderado (max-ratio pesado por AUROC):
+  Validacao - media: 0.8754, max: 32.3377
+  Teste     - media: 1.2438, max: 32.3377
+
+  AUC-ROC: val=0.8133, teste=0.8717
+  AUC-PR:  val=0.0715, teste=0.1063
+  AUC-ROC v3 baseline (referencia): val=0.6744, teste=0.8643
+
+  Beta-F1 (beta=1.00): threshold=0.5891
+    Val:   prec=0.0950, rec=0.8090
+    Teste: prec=0.0230, rec=0.8829, F1=0.0449
+    Positivos: 248,153/477,656 (52.0%)
+
+  Beta-F1 (beta=0.50): threshold=0.5937
+    Val:   prec=0.0952, rec=0.8013
+    Teste: prec=0.0232, rec=0.8826, F1=0.0452
+    Positivos: 246,454/477,656 (51.6%)
+
+  Beta-F1 (beta=0.25): threshold=0.5937
+    Val:   prec=0.0952, rec=0.8013
+    Teste: prec=0.0232, rec=0.8826, F1=0.0452
+    Positivos: 246,454/477,656 (51.6%)
+
+=== Avaliacao detalhada: Score Ponderado + Beta-F1 (beta=0.5) ===
+
+  Validacao: Acc=0.7709, Prec=0.0951, Rec=0.8012, F1=0.1701
+    VP=11213, FP=106638, FN=2782, VN=356942
+    Positivos: 117,851/477,575 (24.7%)
+
+  Teste: Acc=0.4944, Prec=0.0232, Rec=0.8826, F1=0.0452
+    VP=5711, FP=240743, FN=760, VN=230442
+    Positivos: 246,454/477,656 (51.6%)
+
+=== SECAO 12: SUAVIZACAO TEMPORAL ===
+
+Impacto da suavizacao temporal no Score Ponderado + Beta-F1 (beta=0.5):
+    K |   Precisao |   Recall |       F1 |    Pos (%)
+--------------------------------------------------
+  K= 1 |     0.0232 |   0.8826 |   0.0452 |      51.6% <- baseline
+  K= 3 |     0.0232 |   0.8826 |   0.0452 |      51.6%
+  K= 5 |     0.0232 |   0.8826 |   0.0452 |      51.6%
+  K= 9 |     0.0232 |   0.8826 |   0.0452 |      51.6%
+  K=15 |     0.0232 |   0.8826 |   0.0452 |      51.6%
+
+Melhor K (por F1 no teste): K=15
+
+=== Avaliacao detalhada: Score Ponderado + Beta-F1 + Suavizacao (K=5) ===
+
+  Validacao: Acc=0.7709, Prec=0.0951, Rec=0.8009, F1=0.1700
+    VP=11209, FP=106628, FN=2786, VN=356952
+
+  Teste: Acc=0.4946, Prec=0.0232, Rec=0.8826, F1=0.0452
+    VP=5711, FP=240657, FN=760, VN=230528
+
+=== SECAO 13: CONTAGEM COM MASCARA INFORMATIVA ===
+
+Comparando mascaras de features (Teste):
+
+  [v3 baseline] Todas as 305 features, min_features_exceed=15:
+    Prec=0.0164, Rec=0.9646, F1=0.0322
+
+  P95 + Mascara Info (std>0.01) (n_informative=144, min_exceeded=7):
+    Acc=0.2337, Prec=0.0165, Rec=0.9456, F1=0.0324
+    Positivos: 371,785/477,656 (77.8%)
+    VP=6119, FP=365666, FN=352, VN=105519
+
+  P95 + Mascara Discriminativa (AUROC>0.55) (n_informative=92, min_exceeded=4):
+    Acc=0.2415, Prec=0.0168, Rec=0.9586, F1=0.0331
+    Positivos: 368,228/477,656 (77.1%)
+    VP=6203, FP=362025, FN=268, VN=109160
+
+  P99 + Mascara Info (n_informative=144, min_exceeded=7):
+    Acc=0.6087, Prec=0.0293, Rec=0.8685, F1=0.0567
+    Positivos: 191,694/477,656 (40.1%)
+    VP=5620, FP=186074, FN=851, VN=285111
+
+  P95 + Mascara Info + Suavizacao K=5 (Teste):
+    Prec=0.0165, Rec=0.9458, F1=0.0324
+
+=== SECAO 14: CLASSIFICADOR XGBOOST POS-HOC ===
+
+XGBoost version: 3.2.0
+Construindo features para XGBoost...
+  X_val:  (477575, 925)
+  X_test: (477656, 925)
+  Anomalias em val: 13,995/477,575 (2.93%)
+  Anomalias em test: 6,471/477,656 (1.35%)
+  scale_pos_weight: 33
+
+Treinando XGBoost no set de validacao (com labels)...
+XGBoost treinado em 19.4s
+
+XGBoost AUC-ROC: val=0.9999, teste=0.7429
+XGBoost AUC-PR:  val=0.9971, teste=0.0390
+
+Selecionando threshold Beta-F1 (beta=0.5) no val...
+  Threshold XGBoost (beta=0.5): 0.9853
+  Val: prec=0.9997, rec=0.9218
+
+=== Avaliacao detalhada: XGBoost (beta=0.5, Teste) ===
+  Acc=0.9865, Prec=0.0000, Rec=0.0000, F1=0.0000
+  VP=0, FP=0, FN=6471, VN=471185
+  Positivos: 0/477,656 (0.0%)
+
+  XGBoost + Suavizacao K=5 (Teste):
+  Prec=0.0000, Rec=0.0000, F1=0.0000
+  Positivos: 0/477,656
+
+XGBoost salvo: /mnt/hdd/home/theleno/IC_Thiago-Heleno_Wind_Turbines/resultados/results_cnn_lstm_anomaly/xgb_classifier.pkl
+Threshold XGBoost salvo: /mnt/hdd/home/theleno/IC_Thiago-Heleno_Wind_Turbines/resultados/results_cnn_lstm_anomaly/xgb_threshold.json
+
+=== SECAO 15: AVALIACAO POR EVENTO ===
+
+Taxa de deteccao por evento (Teste):
+
+  v3 P95 baseline:
+    Evento |  Janelas Anom | Detectadas |     Taxa
+        16 |          2195 |       2105 |   95.9%
+        30 |          3298 |       3159 |   95.8%
+        66 |           978 |        978 |  100.0%
+  Media (por evento): 97.2% | Ponderada: 96.5%
+
+  v4 Score Ponderado + Beta-F1 (beta=0.5):
+    Evento |  Janelas Anom | Detectadas |     Taxa
+        16 |          2195 |       1901 |   86.6%
+        30 |          3298 |       3002 |   91.0%
+        66 |           978 |        808 |   82.6%
+  Media (por evento): 86.7% | Ponderada: 88.3%
+
+  v4 Score Ponderado + Beta-F1 + Suavizacao K=5:
+    Evento |  Janelas Anom | Detectadas |     Taxa
+        16 |          2195 |       1901 |   86.6%
+        30 |          3298 |       3002 |   91.0%
+        66 |           978 |        808 |   82.6%
+  Media (por evento): 86.7% | Ponderada: 88.3%
+
+  v4 P95 + Mascara Informativa:
+    Evento |  Janelas Anom | Detectadas |     Taxa
+        16 |          2195 |       2005 |   91.3%
+        30 |          3298 |       3136 |   95.1%
+        66 |           978 |        978 |  100.0%
+  Media (por evento): 95.5% | Ponderada: 94.6%
+
+  v4 XGBoost (beta=0.5):
+    Evento |  Janelas Anom | Detectadas |     Taxa
+        16 |          2195 |          0 |    0.0%
+        30 |          3298 |          0 |    0.0%
+        66 |           978 |          0 |    0.0%
+  Media (por evento): 0.0% | Ponderada: 0.0%
+
+  v4 XGBoost + Suavizacao K=5:
+    Evento |  Janelas Anom | Detectadas |     Taxa
+        16 |          2195 |          0 |    0.0%
+        30 |          3298 |          0 |    0.0%
+        66 |           978 |          0 |    0.0%
+  Media (por evento): 0.0% | Ponderada: 0.0%
+
+==========================================================================================
+TABELA COMPARATIVA: v3 vs v4 -- CONJUNTO DE TESTE
+==========================================================================================
+         Estrategia  Precisao  Recall     F1  AUC-ROC
+    v3 P95 baseline    0.0164  0.9646 0.0322   0.8643
+    v3 P99 baseline    0.0299  0.8846 0.0578   0.8643
+v3 Best-F1 baseline    0.0159  0.9499 0.0312   0.8643
+ v4 Score Pond.+BF1    0.0232  0.8826 0.0452   0.8717
+       v4 +Suav K=5    0.0232  0.8826 0.0452      NaN
+    v4 P95+MascInfo    0.0165  0.9456 0.0324   0.8643
+v4 P95+MascInfo+K=5    0.0165  0.9458 0.0324      NaN
+         v4 XGBoost    0.0000  0.0000 0.0000   0.7429
+     v4 XGBoost+K=5    0.0000  0.0000 0.0000      NaN
+
+==========================================================================================
+RESUMO: Melhoria em Precisao (mantendo Recall >= 0.80)
+==========================================================================================
+  v3 P95 baseline                Prec=0.0164 Rec=0.9646 F1=0.0322 (+0% vs baseline)
+  v3 P99 baseline                Prec=0.0299 Rec=0.8846 F1=0.0578 (+82% vs baseline) <- MELHOR
+  v3 Best-F1 baseline            Prec=0.0159 Rec=0.9499 F1=0.0312 (+-3% vs baseline)
+  v4 Score Pond.+BF1             Prec=0.0232 Rec=0.8826 F1=0.0452 (+41% vs baseline)
+  v4 +Suav K=5                   Prec=0.0232 Rec=0.8826 F1=0.0452 (+42% vs baseline)
+  v4 P95+MascInfo                Prec=0.0165 Rec=0.9456 F1=0.0324 (+0% vs baseline)
+  v4 P95+MascInfo+K=5            Prec=0.0165 Rec=0.9458 F1=0.0324 (+0% vs baseline)
+Modelo salvo: /mnt/hdd/home/theleno/IC_Thiago-Heleno_Wind_Turbines/resultados/results_cnn_lstm_anomaly/modelo_cnn_bilstm_attention_autoencoder.pth
+Scaler salvo: /mnt/hdd/home/theleno/IC_Thiago-Heleno_Wind_Turbines/resultados/results_cnn_lstm_anomaly/scaler.pkl
+Features salvas: /mnt/hdd/home/theleno/IC_Thiago-Heleno_Wind_Turbines/resultados/results_cnn_lstm_anomaly/features_selecionadas.json
+Thresholds per-feature salvos: P95 (/mnt/hdd/home/theleno/IC_Thiago-Heleno_Wind_Turbines/resultados/results_cnn_lstm_anomaly/thresholds_per_feature_p95.npy), P99 (/mnt/hdd/home/theleno/IC_Thiago-Heleno_Wind_Turbines/resultados/results_cnn_lstm_anomaly/thresholds_per_feature_p99.npy)
+Thresholds metadata salvos: /mnt/hdd/home/theleno/IC_Thiago-Heleno_Wind_Turbines/resultados/results_cnn_lstm_anomaly/thresholds.json
+
+Artefatos salvos no diretorio: /mnt/hdd/home/theleno/IC_Thiago-Heleno_Wind_Turbines/resultados/results_cnn_lstm_anomaly/
+
+Artefatos v4 adicionais salvos em: /mnt/hdd/home/theleno/IC_Thiago-Heleno_Wind_Turbines/resultados/results_cnn_lstm_anomaly/
+  - feature_masks.npz (info_mask, discriminative_mask, feature_auroc)
+  - feature_weights.npy, feature_auroc.npy
+  - results_v4.json (metricas de todas as estrategias)
+  - xgb_classifier.pkl, xgb_threshold.json
+  - xgb_feature_importance.png, roc_pr_curves.png
+  - feature_analysis.png
+
+=== PIPELINE COMPLETO (v3 + v4) CONCLUIDO ===
+=

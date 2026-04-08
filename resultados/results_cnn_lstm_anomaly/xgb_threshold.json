@@ -1,0 +1,9 @@
+{
+  "threshold": 0.9852826595306396,
+  "beta": 0.5,
+  "auc_roc_val": 0.9999119119246871,
+  "auc_roc_test": 0.742881660448632,
+  "precision_test": 0.0,
+  "recall_test": 0.0,
+  "f1_test": 0.0
+}

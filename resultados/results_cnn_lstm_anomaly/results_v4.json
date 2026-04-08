@@ -1,0 +1,74 @@
+{
+  "version": "v4",
+  "base_model": "CNN-BiLSTM-Attention Autoencoder (treinado neste script)",
+  "improvements": [
+    "Feature-weighted anomaly score (by AUROC)",
+    "Beta-F1 threshold (beta=0.5)",
+    "Temporal smoothing K=5",
+    "Informative feature mask (std>0.01)",
+    "XGBoost post-hoc classifier"
+  ],
+  "n_features": 305,
+  "n_informative_features": 144,
+  "n_discriminative_features": 92,
+  "thresholds": {
+    "weighted_score_beta05": 0.5936526465223292,
+    "xgboost_beta05": 0.9852826595306396
+  },
+  "metrics_test": {
+    "v3 P95 baseline": {
+      "precision": 0.016381998173362586,
+      "recall": 0.9646113429145418,
+      "f1": 0.03221685733382538,
+      "auc_roc": 0.8642962637133431
+    },
+    "v3 P99 baseline": {
+      "precision": 0.029876454284953727,
+      "recall": 0.8845618915159944,
+      "f1": 0.05780066646470766,
+      "auc_roc": 0.8642962637133431
+    },
+    "v3 Best-F1 baseline": {
+      "precision": 0.015883269467792904,
+      "recall": 0.9499304589707928,
+      "f1": 0.031244122984024684,
+      "auc_roc": 0.8642962637133431
+    },
+    "v4 Score Pond.+BF1": {
+      "precision": 0.023172681311725514,
+      "recall": 0.8825529284500078,
+      "f1": 0.04515963230206583,
+      "auc_roc": 0.8717034872376235
+    },
+    "v4 +Suav K=5": {
+      "precision": 0.023180770229899988,
+      "recall": 0.8825529284500078,
+      "f1": 0.045174992781967974,
+      "auc_roc": null
+    },
+    "v4 P95+MascInfo": {
+      "precision": 0.01645843699987896,
+      "recall": 0.9456034615978983,
+      "f1": 0.03235374984137727,
+      "auc_roc": 0.8642962637133431
+    },
+    "v4 P95+MascInfo+K=5": {
+      "precision": 0.01646121527880511,
+      "recall": 0.9457579972183588,
+      "f1": 0.03235920836263463,
+      "auc_roc": null
+    },
+    "v4 XGBoost": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "auc_roc": 0.742881660448632
+    },
+    "v4 XGBoost+K=5": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "auc_roc": null
+    }
+  }
+}

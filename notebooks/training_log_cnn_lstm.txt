@@ -1,0 +1,205 @@
+Device: cuda
+Recursos (lab): CUDA_VISIBLE_DEVICES=1  LAB_CPU_THREADS=6
+PyTorch: 2.11.0+cu130
+NumPy:   2.1.3
+Pandas:  3.0.1
+
+Configuration:
+  base_dir: CARE_To_Compare/Wind Farm C
+  window_size: 36
+  conv1_filters: 32
+  conv1_kernel: 3
+  pool1_size: 2
+  conv2_filters: 64
+  conv2_kernel: 2
+  pool2_size: 3
+  lstm1_units: 100
+  lstm2_units: 80
+  dropout_rate: 0.5
+  dense1_units: 50
+  dense2_units: 10
+  num_classes: 2
+  batch_size: 600
+  epochs: 500
+  learning_rate: 0.001
+  early_stopping_patience: 20
+  xgb_top_pct: 0.3
+  train_ratio: 0.7
+  val_ratio: 0.15
+  test_ratio: 0.15
+  max_total_windows: 100000
+Using base_dir: /mnt/hdd/home/theleno/IC_Thiago-Heleno_Wind_Turbines/CARE_To_Compare/Wind Farm C
+Events: 58
+  Anomaly: 27
+  Normal:  31
+
+Sensors described: 238
+
+Event info columns: ['event_id', 'event_label', 'event_start', 'event_start_id', 'event_end', 'event_end_id', 'event_description']
+   event_id event_label          event_start  event_start_id            event_end  event_end_id                                                                                                                                                                              event_description
+0        55     anomaly  2018-10-29 11:30:00           52848  2018-11-15 15:30:00         55320                                                                                                                      Harting plug Nacelle/HUB damaged + NCR20_HUB: Wiring blade control system
+1        81     anomaly  2019-11-17 01:30:00           52704  2019-11-19 14:00:00         53067                                                                                                                         Converter Failure from 17.11 12:30 - 18.11. 13:57, Fuse Filter Supply 
+2        47     anomaly  2018-12-23 15:00:00           52416  2018-12-28 13:40:00         53128  Failure due to Rotorbrake and Hydraulic problemes - Hydraulic pump A disabeld, 2h later turbine back in production - Data shows anomaly in temp_hydraulic_oil_tank_1_average until 15.01.2023
+3        12     anomaly  2025-06-25 00:00:00           52560  2025-07-17 15:00:00         55818                                                    10115 : Oil level error, two-pump mode + Oil Leakage Gear Oil Supply + 12019: Rotor brake B cannot be closed + P20_yaw carbon brush damaged
+4         4     anomaly  2026-07-29 10:00:00           52992  2026-08-17 10:00:00         55728                                                                                                                                                            23020 : Axis 3 not ready-to-operate
+5        18     anomaly  2025-09-12 00:00:00           51408  2025-09-15 23:50:00         51983                        We had some failures (störung 24VAC Versorgung Rotorbremse) on the 16th in the afternoon. From 17th onwards a longer standstill where we don't know the root cause to. 
+6        28     anomaly  2023-05-27 13:00:00           52704  2023-06-16 20:30:00         55629                                                                                                                             P20_spinner_carbonbrush defekt + P20_Accumulators_hydraulic system
+7        39     anomaly  2022-10-18 13:00:00           52848  2022-10-23 15:20:00         53582                                                                                                                         15004 : Safety chain relay open + 93005 : Gear oil cooler bypass valve
+8        66     anomaly  2029-01-15 00:00:00           51696  2029-01-21 13:00:00         52638                                                              Pitchfailure - defect Beckhoffcard, Axis 2, rectified on 23/01 - Anomalie liegt aber länger an als der Fehler, Batterien waren ok
+9        15     anomaly  2019-02-07 00:00:00           51984  2019-02-24 00:00:00         54432                                                                                  Randomn small failures regarding pitch resulting in a longer standstill due to a defect pitch encoder (26/02)
+Original sensor columns: 952
+Angle columns: 0 -> Transformed into Sin/Cos
+Expanded sensor columns: 952
+
+Event-level split (leakage-free):
+  Train events: 40 | Val events: 8 | Test events: 10
+  Train: 18 anomaly events, 22 normal events
+  Val  : 4 anomaly events, 4 normal events
+  Test : 5 anomaly events, 5 normal events
+
+--- Pass 1: Computing scaler statistics (TRAIN events only, chunked) ---
+  Scanned 20/58 files
+  Scanned 40/58 files
+
+Total rows across all files: 3,187,136
+Anomaly rows: 60,897
+Normal rows: 3,126,239
+Imbalance ratio: 51.3:1
+--- Pass 2: Sampling rows for XGBoost (TRAIN events only) ---
+XGBoost sample: 100,000 rows, 952 features
+  Class 0: 97,843  Class 1: 2,157
+
+Total features: 952
+Selected top 30%: 285 features
+
+Working with 285 features from now on
+--- Pass 3: Building window index (undersampling ONLY train) ---
+Train windows before undersample: anom=50,343  norm=2,160,374
+Train normal keep fraction: 0.023303
+  Processed 10/58 files (132,406 windows indexed)
+  Processed 20/58 files (309,626 windows indexed)
+  Processed 30/58 files (597,281 windows indexed)
+  Processed 40/58 files (771,747 windows indexed)
+  Processed 50/58 files (955,140 windows indexed)
+
+Total windows indexed: 1,075,055
+Labels: 0=1,013,353  1=61,702
+Memory (flat arrays): 3.63 GB  vs  44.1 GB if materialized
+
+NOTA: Undersampling aplicado SOMENTE em eventos de treino.
+      Val/Test mantem distribuicao natural de classes.
+Train: 100,666 windows | 0=50,323  1=50,343
+Val  : 433,280 windows | 0=431,043  1=2,237
+Test : 541,109 windows | 0=531,987  1=9,122
+
+NOTA: Train foi balanceado via undersampling de janelas normais.
+      Val e Test mantem a distribuicao NATURAL de classes.
+DataLoaders ready (lazy, on-the-fly) | batch_size=600
+Input shape per sample: (36, 285)
+  Train: 100,666 | Val: 433,280 | Test: 541,109
+CNN-LSTM Model: 160,774 parameters
+CNNLSTM(
+  (conv1): Conv1d(285, 32, kernel_size=(3,), stride=(1,))
+  (pool1): MaxPool1d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+  (conv2): Conv1d(32, 64, kernel_size=(2,), stride=(1,))
+  (pool2): MaxPool1d(kernel_size=3, stride=3, padding=0, dilation=1, ceil_mode=False)
+  (lstm1): LSTM(64, 100, batch_first=True)
+  (lstm2): LSTM(100, 80, batch_first=True)
+  (dropout): Dropout(p=0.5, inplace=False)
+  (fc1): Linear(in_features=80, out_features=50, bias=True)
+  (fc2): Linear(in_features=50, out_features=10, bias=True)
+  (fc3): Linear(in_features=10, out_features=2, bias=True)
+  (selu): SELU()
+)
+============================================================
+Training CNN-LSTM Model
+============================================================
+[CNN-LSTM] Epoch   1/500 | TrLoss:0.4503 TrAcc:0.7801 | VaLoss:0.9317 VaAcc:0.6555 | Pat:0/20
+[CNN-LSTM] Epoch  10/500 | TrLoss:0.0876 TrAcc:0.9725 | VaLoss:0.8626 VaAcc:0.8212 | Pat:4/20
+[CNN-LSTM] Epoch  20/500 | TrLoss:0.0602 TrAcc:0.9824 | VaLoss:0.9444 VaAcc:0.7908 | Pat:14/20
+[CNN-LSTM] Early stopping at epoch 26
+  [Validation] Optimal Threshold: 0.8170 → F1-Score: 0.0422
+
+==================================================
+  CNN-LSTM - Test Results
+==================================================
+  Accuracy:  96.85%
+  Precision: 3.28%
+  Recall:    3.05%
+  F1-Score:  3.16%
+  AUC-ROC:   0.6609
+              precision    recall  f1-score   support
+
+      Normal       0.98      0.98      0.98    531987
+     Anomaly       0.03      0.03      0.03      9122
+
+    accuracy                           0.97    541109
+   macro avg       0.51      0.51      0.51    541109
+weighted avg       0.97      0.97      0.97    541109
+
+============================================================ 
+Training Standalone CNN
+============================================================
+[CNN] Epoch   1/500 | TrLoss:0.4916 TrAcc:0.7488 | VaLoss:1.5473 VaAcc:0.5859 | Pat:0/20
+[CNN] Epoch  10/500 | TrLoss:0.1660 TrAcc:0.9348 | VaLoss:1.0701 VaAcc:0.8539 | Pat:5/20
+[CNN] Epoch  20/500 | TrLoss:0.1293 TrAcc:0.9544 | VaLoss:1.1528 VaAcc:0.8766 | Pat:8/20
+[CNN] Epoch  30/500 | TrLoss:0.0691 TrAcc:0.9788 | VaLoss:0.9511 VaAcc:0.9098 | Pat:18/20
+[CNN] Early stopping at epoch 32
+
+============================================================ 
+Training Standalone LSTM
+============================================================
+[LSTM] Epoch   1/500 | TrLoss:0.4249 TrAcc:0.7927 | VaLoss:0.7567 VaAcc:0.7535 | Pat:0/20
+[LSTM] Epoch  10/500 | TrLoss:0.0641 TrAcc:0.9812 | VaLoss:0.6272 VaAcc:0.8947 | Pat:4/20
+[LSTM] Epoch  20/500 | TrLoss:0.1272 TrAcc:0.9552 | VaLoss:1.1262 VaAcc:0.7399 | Pat:1/20
+[LSTM] Epoch  30/500 | TrLoss:0.0472 TrAcc:0.9872 | VaLoss:0.9979 VaAcc:0.7944 | Pat:11/20
+[LSTM] Early stopping at epoch 39
+  [Validation] Optimal Threshold: 0.9653 → F1-Score: 0.0410
+
+==================================================
+  CNN - Test Results
+==================================================
+  Accuracy:  98.15%
+  Precision: 19.62%
+  Recall:    3.18%
+  F1-Score:  5.47%
+  AUC-ROC:   0.5539
+              precision    recall  f1-score   support
+
+      Normal       0.98      1.00      0.99    531987
+     Anomaly       0.20      0.03      0.05      9122
+
+    accuracy                           0.98    541109
+   macro avg       0.59      0.51      0.52    541109
+weighted avg       0.97      0.98      0.97    541109
+
+  [Validation] Optimal Threshold: 0.9772 → F1-Score: 0.0907
+
+==================================================
+  LSTM - Test Results
+==================================================
+  Accuracy:  98.31%
+  Precision: 0.00%
+  Recall:    0.00%
+  F1-Score:  0.00%
+  AUC-ROC:   0.4034
+              precision    recall  f1-score   support
+
+      Normal       0.98      1.00      0.99    531987
+     Anomaly       0.00      0.00      0.00      9122
+
+    accuracy                           0.98    541109
+   macro avg       0.49      0.50      0.50    541109
+weighted avg       0.97      0.98      0.97    541109
+
+Model Comparison (Paper Table 4 style):
+      Model  Accuracy (%)  Precision (%)  Recall (%)  F1-Score (%)  AUC-ROC
+0       CNN         98.15          19.62        3.18          5.47     0.55
+1      LSTM         98.31           0.00        0.00          0.00     0.40
+2  CNN-LSTM         96.85           3.28        3.05          3.16     0.66
+Results saved to '../resultados/results_cnn_lstm_paper/':
+  cnn_lstm_model.pth: 633.3 KB
+  cnn_model.pth: 192.1 KB
+  lstm_model.pth: 854.1 KB
+  results.json: 7.5 KB
+  scaler.npz: 7.4 KB
