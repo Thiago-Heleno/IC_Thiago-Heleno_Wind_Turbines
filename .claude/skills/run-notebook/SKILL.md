@@ -36,14 +36,23 @@ Ler o log para calcular progresso:
 
 ```bash
 # Contar trials completos
-grep "Trial .* finished" notebooks/training_log.txt | wc -l
+grep "Trial .* finished" notebooks/<notebook>.txt | wc -l
 
 # Ver último trial e horário
-grep "Trial .* finished" notebooks/training_log.txt | tail -5
+grep "Trial .* finished" notebooks/<notebook>.txt | tail -5
 
 # Ver o total de trials configurado no script
-grep "N_OPTUNA_TRIALS_AE" notebooks/run_autoencoder_keras.py | head -5
+grep "N_OPTUNA_TRIALS_AE" notebooks/<notebook>.py | head -5
 ```
+
+**Notebooks e seus logs/scripts (convenção de nomenclatura):**
+| Notebook | Script | Log de treino | Resultados |
+|----------|--------|--------------|-----------|
+| `wind_turbine_cnn_lstm_paper.ipynb` | `wind_turbine_cnn_lstm_paper.py` | `wind_turbine_cnn_lstm_paper.txt` | `resultados/wind_turbine_cnn_lstm_paper/` |
+| `wind_turbine_anomaly_detection_v4.ipynb` | `wind_turbine_anomaly_detection_v4.py` | `wind_turbine_anomaly_detection_v4.txt` | `resultados/wind_turbine_anomaly_detection_v4/` |
+| `wind_turbine_autoencoder_keras_pipeline.ipynb` | `wind_turbine_autoencoder_keras_pipeline.py` | `wind_turbine_autoencoder_keras_pipeline.txt` | `resultados/wind_turbine_autoencoder_keras_pipeline/` |
+
+Todos os arquivos ficam dentro de `notebooks/` (exceto os resultados).
 
 **Cálculo manual:**
 - `trials_completos / total_trials` = progresso
@@ -55,9 +64,14 @@ grep "N_OPTUNA_TRIALS_AE" notebooks/run_autoencoder_keras.py | head -5
 ## 3. Acompanhar log em tempo real
 
 ```bash
-tail -f notebooks/training_log.txt
+tail -f notebooks/<notebook>.txt
 # ou as últimas N linhas:
-tail -50 notebooks/training_log.txt
+tail -50 notebooks/<notebook>.txt
+```
+
+Exemplo para o Keras pipeline:
+```bash
+tail -f notebooks/wind_turbine_autoencoder_keras_pipeline.txt
 ```
 
 ---
@@ -105,7 +119,8 @@ NUMEXPR_NUM_THREADS=6  VECLIB_MAXIMUM_THREADS=6
 
 ## 6. Template completo — executar em background
 
-Substitua `<GPU>` (0 ou 1), `<N>` (4 ou 6), `<script>` e `<log>`:
+O log deve ter o **mesmo nome do notebook** (convenção do projeto).  
+Substitua `<GPU>` (0 ou 1), `<N>` (4 ou 6) e `<notebook>` pelo nome base do notebook:
 
 **4 cores, GPU escolhida:**
 ```bash
@@ -115,8 +130,8 @@ nohup conda run --no-capture-output -n theleno env \
   OPENBLAS_NUM_THREADS=4 NUMEXPR_NUM_THREADS=4 VECLIB_MAXIMUM_THREADS=4 \
   MPLBACKEND=Agg \
   taskset -c 0-3 \
-  python notebooks/<script>.py \
-  > notebooks/training_log.txt 2>&1 &
+  python notebooks/<notebook>.py \
+  > notebooks/<notebook>.txt 2>&1 &
 
 echo "PID: $!"
 ```
@@ -129,8 +144,22 @@ nohup conda run --no-capture-output -n theleno env \
   OPENBLAS_NUM_THREADS=6 NUMEXPR_NUM_THREADS=6 VECLIB_MAXIMUM_THREADS=6 \
   MPLBACKEND=Agg \
   taskset -c 0-5 \
-  python notebooks/<script>.py \
-  > notebooks/training_log.txt 2>&1 &
+  python notebooks/<notebook>.py \
+  > notebooks/<notebook>.txt 2>&1 &
+
+echo "PID: $!"
+```
+
+**Exemplo para o Keras pipeline:**
+```bash
+nohup conda run --no-capture-output -n theleno env \
+  CUDA_VISIBLE_DEVICES=1 \
+  OMP_NUM_THREADS=6 MKL_NUM_THREADS=6 \
+  OPENBLAS_NUM_THREADS=6 NUMEXPR_NUM_THREADS=6 VECLIB_MAXIMUM_THREADS=6 \
+  MPLBACKEND=Agg \
+  taskset -c 0-5 \
+  python notebooks/wind_turbine_autoencoder_keras_pipeline.py \
+  > notebooks/wind_turbine_autoencoder_keras_pipeline.txt 2>&1 &
 
 echo "PID: $!"
 ```
@@ -161,10 +190,13 @@ Quando o usuário perguntar sobre o status de um script, execute estes passos em
 
 1. `ps aux | grep python | grep -v grep` — está rodando?
 2. Se sim: `ps -p <PID> -o pid,start,etime,pcpu,pmem,stat --no-headers` — detalhes
-3. `tail -20 notebooks/training_log.txt` — últimas mensagens do log
-4. `grep "Trial .* finished" notebooks/training_log.txt | wc -l` — progresso Optuna
-5. `ls -lh resultados/results_keras_pipeline/` — artefatos gerados
+3. `tail -20 notebooks/<notebook>.txt` — últimas mensagens do log
+4. `grep "Trial .* finished" notebooks/<notebook>.txt | wc -l` — progresso Optuna
+5. `ls -lh resultados/<notebook>/` — artefatos gerados
 6. `nvidia-smi --query-gpu=index,utilization.gpu,memory.used,memory.total --format=csv,noheader,nounits` — uso de GPU
+
+**Convenção:** `<notebook>` é sempre o nome base do arquivo `.ipynb` (sem extensão).  
+Exemplo: notebook `wind_turbine_autoencoder_keras_pipeline.ipynb` → log em `notebooks/wind_turbine_autoencoder_keras_pipeline.txt` → resultados em `resultados/wind_turbine_autoencoder_keras_pipeline/`.
 
 Com essas informações, calcule e apresente:
 - Status (rodando / parado / erro)
