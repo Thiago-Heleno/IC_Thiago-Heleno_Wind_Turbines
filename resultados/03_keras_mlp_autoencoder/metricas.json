@@ -1,0 +1,62 @@
+{
+  "notebook": "wind_turbine_autoencoder_keras_pipeline",
+  "codigo_fonte": "notebooks/wind_turbine_autoencoder_keras_pipeline.ipynb",
+  "paradigma": "semi-supervisionado",
+  "modelo": "Dense MLP Autoencoder simetrico (Keras/TensorFlow) + threshold adaptativo + ARCANA",
+  "dataset": "CARE_To_Compare Wind Farm C",
+  "data_execucao": "2026-04-09",
+
+  "configuracao": {
+    "n_datasets": 58,
+    "n_anomalous_datasets": 51,
+    "n_normal_datasets": 7,
+    "split": "treino AE + calibracao temporal",
+    "otimizacao": "Optuna (autoencoder + regressor auxiliar)",
+    "preprocessamento": ["clipping", "imputacao temporal", "transformacao angular", "derivada contadores", "rolling features", "padronizacao"]
+  },
+
+  "hiperparametros_otimos": {
+    "n_layers": 2,
+    "code_size": 35,
+    "learning_rate": 0.0009795153640678915,
+    "decay_rate": 0.9940770877791518,
+    "gamma": 0.07606950175076169
+  },
+
+  "thresholds": {
+    "fixed_threshold_p95": 2.9539934892872384,
+    "fixed_threshold_fbeta": -0.6132789658646763,
+    "gamma": 0.49970917546365745,
+    "adaptive_formula": "rmse_pred + gamma",
+    "regression_nn": {"layers": 1, "units": 32, "optimizer": "Adam"},
+    "score_standardization": {"mu": 0.27911762387276323, "sigma": 0.10152228997408225},
+    "smoothing_window": 5,
+    "criticality_threshold": 6
+  },
+
+  "metricas_CARE": {
+    "F1_2":  0.39276582808134625,
+    "Acc":   0.7738279721210146,
+    "EF1_2": 0.898876404494382,
+    "WS":    0.6571363011244545,
+    "CARE":  0.6992868955884424
+  },
+
+  "artefatos": {
+    "modelo_keras": "autoencoder_best.keras",
+    "modelo_h5":    "autoencoder.h5",
+    "optuna_study": "optuna_ae_study.db",
+    "hiperparametros": "best_params.json",
+    "thresholds_raw": "threshold_params.json",
+    "resumo_CARE": "care_summary.json",
+    "resultados_por_dataset": "care_results.csv",
+    "resultados_ARCANA": "arcana_results.csv",
+    "analise_detalhada": "analysis.md"
+  },
+
+  "notas": [
+    "Metricas no padrao CARE benchmark: F1_2 (beta=2), EF1_2 (event-level), WS (weighted score), score CARE agregado.",
+    "EF1_2=0.899 indica deteccao forte em nivel de evento.",
+    "Score CARE 0.699 posiciona pipeline como baseline competitivo para comparacao futura."
+  ]
+}

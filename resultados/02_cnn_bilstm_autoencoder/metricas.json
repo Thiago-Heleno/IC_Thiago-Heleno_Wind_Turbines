@@ -1,0 +1,68 @@
+{
+  "notebook": "wind_turbine_anomaly_detection_v4",
+  "codigo_fonte": "notebooks/wind_turbine_anomaly_detection_v4.ipynb",
+  "paradigma": "semi-supervisionado",
+  "modelo": "CNN-BiLSTM-Attention Autoencoder (PyTorch) + XGBoost post-hoc",
+  "dataset": "CARE_To_Compare Wind Farm C",
+  "data_execucao": "2026-04-09",
+  "versao": "v4",
+
+  "configuracao": {
+    "n_features_totais": 305,
+    "n_features_informativas": 144,
+    "n_features_discriminativas": 92,
+    "janela": 36,
+    "split": "temporal 70/15/15",
+    "fast_mode": false
+  },
+
+  "thresholds": {
+    "weighted_score_beta05": 0.5936526465223292,
+    "xgboost_beta05": 0.9852826595306396,
+    "per_feature_best_f1": 2.5385944843292236,
+    "min_features_exceed": 15
+  },
+
+  "metricas_teste": {
+    "v3_P95_baseline":       {"precision": 0.01638, "recall": 0.96461, "f1": 0.03222, "auc_roc": 0.86430, "accuracy": 0.21488},
+    "v3_P99_baseline":       {"precision": 0.02988, "recall": 0.88456, "f1": 0.05780, "auc_roc": 0.86430, "accuracy": 0.60932},
+    "v3_BestF1_baseline":    {"precision": 0.01588, "recall": 0.94993, "f1": 0.03124, "auc_roc": 0.86430, "accuracy": 0.20196},
+    "v4_ScorePond_BF1":      {"precision": 0.02317, "recall": 0.88255, "f1": 0.04516, "auc_roc": 0.87170},
+    "v4_Suav_K5":            {"precision": 0.02318, "recall": 0.88255, "f1": 0.04517, "auc_roc": null},
+    "v4_P95_MascInfo":       {"precision": 0.01646, "recall": 0.94560, "f1": 0.03235, "auc_roc": 0.86430},
+    "v4_P95_MascInfo_K5":    {"precision": 0.01646, "recall": 0.94576, "f1": 0.03236, "auc_roc": null},
+    "v4_XGBoost":            {"precision": 0.0,     "recall": 0.0,     "f1": 0.0,     "auc_roc": 0.74288},
+    "v4_XGBoost_K5":         {"precision": 0.0,     "recall": 0.0,     "f1": 0.0,     "auc_roc": null}
+  },
+
+  "metricas_teste_auc": {
+    "auc_roc_test": 0.8642962637133431,
+    "auc_pr_test":  0.09680532034002826,
+    "auc_pr_val":   0.0432227391013647
+  },
+
+  "melhor_configuracao": {
+    "nome": "v4_ScorePond_BF1",
+    "f1": 0.04516,
+    "auc_roc": 0.87170,
+    "justificativa": "Maior F1 entre configuracoes v4 com AUROC superior ao baseline v3."
+  },
+
+  "artefatos": {
+    "modelo": "modelo_cnn_bilstm_attention_autoencoder.pth (nao incluido - gerado em execucao)",
+    "scaler": "scaler.pkl (nao incluido - gerado em execucao)",
+    "features_selecionadas": "features_selecionadas.json",
+    "thresholds_raw": ["thresholds.json", "xgb_threshold.json", "thresholds_per_feature_p95.npy", "thresholds_per_feature_p99.npy"],
+    "mascaras": "feature_masks.npz",
+    "pesos_features": ["feature_weights.npy", "feature_auroc.npy"],
+    "figuras": ["feature_analysis.png", "roc_pr_curves.png", "xgb_feature_importance.png"],
+    "relatorio_completo": "results_v4.json"
+  },
+
+  "notas": [
+    "Recall alto com precisao muito baixa: modelo sinaliza quase tudo como anomalia.",
+    "F1 degradado pelo forte desbalanceamento de classes (~51:1 Normal:Anomalia).",
+    "XGBoost colapsou em teste (precision=recall=0) apesar de AUC 0.74 — threshold otimista na validacao.",
+    "AUC-ROC e metrica mais informativa neste cenario desbalanceado."
+  ]
+}

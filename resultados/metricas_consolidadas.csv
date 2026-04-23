@@ -1,0 +1,14 @@
+notebook,paradigma,modelo,configuracao,split,precision,recall,f1,auc_roc,auc_pr,accuracy,F1_2,EF1_2,WS,CARE_score,data_execucao,observacoes
+wind_turbine_cnn_lstm_paper,supervisionado,CNN,baseline,teste,,,,,,,,,,,pendente
+wind_turbine_cnn_lstm_paper,supervisionado,LSTM,baseline,teste,,,,,,,,,,,pendente
+wind_turbine_cnn_lstm_paper,supervisionado,CNN-LSTM,baseline,teste,,,,,,,,,,,pendente
+wind_turbine_anomaly_detection_v4,semi-supervisionado,CNN-BiLSTM-Attention AE,v3 P95 baseline,teste,0.01638,0.96461,0.03222,0.86430,,0.21488,,,,,2026-04-09,
+wind_turbine_anomaly_detection_v4,semi-supervisionado,CNN-BiLSTM-Attention AE,v3 P99 baseline,teste,0.02988,0.88456,0.05780,0.86430,,0.60932,,,,,2026-04-09,
+wind_turbine_anomaly_detection_v4,semi-supervisionado,CNN-BiLSTM-Attention AE,v3 Best-F1 baseline,teste,0.01588,0.94993,0.03124,0.86430,,0.20196,,,,,2026-04-09,
+wind_turbine_anomaly_detection_v4,semi-supervisionado,CNN-BiLSTM-Attention AE,v4 Score Pond. + BF1,teste,0.02317,0.88255,0.04516,0.87170,,,,,,,2026-04-09,melhor configuracao v4
+wind_turbine_anomaly_detection_v4,semi-supervisionado,CNN-BiLSTM-Attention AE,v4 Suav K=5,teste,0.02318,0.88255,0.04517,,,,,,,,2026-04-09,
+wind_turbine_anomaly_detection_v4,semi-supervisionado,CNN-BiLSTM-Attention AE,v4 P95+MascInfo,teste,0.01646,0.94560,0.03235,0.86430,,,,,,,2026-04-09,
+wind_turbine_anomaly_detection_v4,semi-supervisionado,CNN-BiLSTM-Attention AE,v4 P95+MascInfo+K=5,teste,0.01646,0.94576,0.03236,,,,,,,,2026-04-09,
+wind_turbine_anomaly_detection_v4,semi-supervisionado,CNN-BiLSTM-Attention AE + XGBoost,v4 XGBoost,teste,0.0,0.0,0.0,0.74288,,,,,,,2026-04-09,colapso em teste
+wind_turbine_anomaly_detection_v4,semi-supervisionado,CNN-BiLSTM-Attention AE + XGBoost,v4 XGBoost+K=5,teste,0.0,0.0,0.0,,,,,,,,2026-04-09,
+wind_turbine_autoencoder_keras_pipeline,semi-supervisionado,Dense MLP AE + Optuna,threshold adaptativo,58 datasets,,,,,,0.77383,0.39277,0.89888,0.65714,0.69929,2026-04-09,metricas CARE benchmark

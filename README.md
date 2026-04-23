@@ -28,16 +28,26 @@ Informacoes importantes do README do CARE incorporadas ao pipeline:
 
 ## Estrutura do Projeto
 
-- notebooks/: notebooks principais dos experimentos.
-- anotacoes/: analises tecnicas em Markdown para apresentacao academica.
-- CARE_To_Compare/: dataset.
-- resultados/: artefatos salvos pelos notebooks (modelos, thresholds e metricas).
+- `notebooks/`: notebooks principais dos experimentos (`.ipynb` + `.py` + log `.txt`).
+- `anotacoes/`: analises tecnicas em Markdown para apresentacao academica.
+- `CARE_To_Compare/`: dataset.
+- `resultados/`: artefatos padronizados por notebook. Ver [resultados/README.md](resultados/README.md).
+
+**Mapa notebook → pasta de resultados:**
+
+| Notebook | Pasta de resultados | Paradigma |
+|----------|---------------------|-----------|
+| `wind_turbine_cnn_lstm_paper.ipynb` | `resultados/01_cnn_lstm_supervisionado/` | Supervisionado |
+| `wind_turbine_anomaly_detection_v4.ipynb` | `resultados/02_cnn_bilstm_autoencoder/` | Semi-supervisionado |
+| `wind_turbine_autoencoder_keras_pipeline.ipynb` | `resultados/03_keras_mlp_autoencoder/` | Semi-supervisionado |
+
+Cada subpasta contem `metricas.json` (schema uniforme) e `README.md` proprio. Comparacao agregada em [resultados/metricas_consolidadas.csv](resultados/metricas_consolidadas.csv).
 
 ## Notebooks Principais e Objetivo
 
-### notebooks/wind_turbine_anomaly_detection_v3.ipynb
+### notebooks/wind_turbine_anomaly_detection_v4.ipynb
 
-Pipeline semi-supervisionado com autoencoder CNN-BiLSTM-Attention (PyTorch).
+Pipeline semi-supervisionado com autoencoder CNN-BiLSTM-Attention (PyTorch). Evolucao da v3 com feature-weighted score, threshold Beta-F1, suavizacao temporal e XGBoost pos-hoc.
 
 Decisoes-chave:
 
@@ -109,6 +119,8 @@ Arquivo de dependencias em notebooks/requirements.txt.
 
 ## Documentacao Tecnica Complementar
 
-- anotacoes/analise_autoencoder_v3.md
-- anotacoes/analise_autoencoder_keras.md
-- anotacoes/analise_cnn_lstm_paper.md
+- [anotacoes/analise_cnn_lstm_paper.md](anotacoes/analise_cnn_lstm_paper.md) — supervisionado CNN/LSTM/CNN-LSTM
+- [anotacoes/analise_cnn_bilstm_autoencoder_v4.md](anotacoes/analise_cnn_bilstm_autoencoder_v4.md) — autoencoder CNN-BiLSTM-Attention v4
+- [anotacoes/analise_autoencoder_keras.md](anotacoes/analise_autoencoder_keras.md) — autoencoder Keras + Optuna + CARE Score
+- [analise_comparativa.md](analise_comparativa.md) — comparacao integrada dos tres pipelines
+- [resultados/README.md](resultados/README.md) — indice de resultados e metricas padronizadas

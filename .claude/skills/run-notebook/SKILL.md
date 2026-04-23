@@ -48,9 +48,9 @@ grep "N_OPTUNA_TRIALS_AE" notebooks/<notebook>.py | head -5
 **Notebooks e seus logs/scripts (convenção de nomenclatura):**
 | Notebook | Script | Log de treino | Resultados |
 |----------|--------|--------------|-----------|
-| `wind_turbine_cnn_lstm_paper.ipynb` | `wind_turbine_cnn_lstm_paper.py` | `wind_turbine_cnn_lstm_paper.txt` | `resultados/wind_turbine_cnn_lstm_paper/` |
-| `wind_turbine_anomaly_detection_v4.ipynb` | `wind_turbine_anomaly_detection_v4.py` | `wind_turbine_anomaly_detection_v4.txt` | `resultados/wind_turbine_anomaly_detection_v4/` |
-| `wind_turbine_autoencoder_keras_pipeline.ipynb` | `wind_turbine_autoencoder_keras_pipeline.py` | `wind_turbine_autoencoder_keras_pipeline.txt` | `resultados/wind_turbine_autoencoder_keras_pipeline/` |
+| `wind_turbine_cnn_lstm_paper.ipynb` | `wind_turbine_cnn_lstm_paper.py` | `wind_turbine_cnn_lstm_paper.txt` | `resultados/01_cnn_lstm_supervisionado/` |
+| `wind_turbine_anomaly_detection_v4.ipynb` | `wind_turbine_anomaly_detection_v4.py` | `wind_turbine_anomaly_detection_v4.txt` | `resultados/02_cnn_bilstm_autoencoder/` |
+| `wind_turbine_autoencoder_keras_pipeline.ipynb` | `wind_turbine_autoencoder_keras_pipeline.py` | `wind_turbine_autoencoder_keras_pipeline.txt` | `resultados/03_keras_mlp_autoencoder/` |
 
 Todos os arquivos ficam dentro de `notebooks/` (exceto os resultados).
 
@@ -196,7 +196,12 @@ Quando o usuário perguntar sobre o status de um script, execute estes passos em
 6. `nvidia-smi --query-gpu=index,utilization.gpu,memory.used,memory.total --format=csv,noheader,nounits` — uso de GPU
 
 **Convenção:** `<notebook>` é sempre o nome base do arquivo `.ipynb` (sem extensão).  
-Exemplo: notebook `wind_turbine_autoencoder_keras_pipeline.ipynb` → log em `notebooks/wind_turbine_autoencoder_keras_pipeline.txt` → resultados em `resultados/wind_turbine_autoencoder_keras_pipeline/`.
+Exemplo: notebook `wind_turbine_autoencoder_keras_pipeline.ipynb` → log em `notebooks/wind_turbine_autoencoder_keras_pipeline.txt` → resultados em `resultados/03_keras_mlp_autoencoder/`.
+
+**Mapa nomeclatura notebook → pasta de resultados:**
+- `wind_turbine_cnn_lstm_paper.ipynb` → `resultados/01_cnn_lstm_supervisionado/`
+- `wind_turbine_anomaly_detection_v4.ipynb` → `resultados/02_cnn_bilstm_autoencoder/`
+- `wind_turbine_autoencoder_keras_pipeline.ipynb` → `resultados/03_keras_mlp_autoencoder/`
 
 Com essas informações, calcule e apresente:
 - Status (rodando / parado / erro)

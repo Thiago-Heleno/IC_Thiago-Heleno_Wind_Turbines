@@ -1,5 +1,8 @@
 # Analise Tecnica - wind_turbine_cnn_lstm_paper.ipynb
 
+> **Resultados salvos em:** [`resultados/01_cnn_lstm_supervisionado/`](../resultados/01_cnn_lstm_supervisionado/)
+> **Metricas padronizadas:** [`resultados/01_cnn_lstm_supervisionado/metricas.json`](../resultados/01_cnn_lstm_supervisionado/metricas.json)
+
 ## Objetivo
 
 Reproduzir e adaptar a abordagem CNN-LSTM do artigo de Qi et al. (Energies 2024) para deteccao de falhas com dados SCADA do CARE (Wind Farm C), tratando o problema como classificacao binaria:
@@ -167,7 +170,7 @@ Objetivo:
 
 Diretorio:
 
-- ../resultados/results_cnn_lstm_paper
+- ../resultados/01_cnn_lstm_supervisionado
 
 Arquivos:
 

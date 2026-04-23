@@ -142,7 +142,7 @@ else:
 DATASETS_DIR = os.path.join(BASE_DIR, "datasets")
 EVENT_INFO_PATH = os.path.join(BASE_DIR, "event_info.csv")
 FEATURE_DESC_PATH = os.path.join(BASE_DIR, "feature_description.csv")
-OUTPUT_DIR = os.path.join(PROJECT_ROOT, "resultados", "results_cnn_lstm_anomaly")
+OUTPUT_DIR = os.path.join(PROJECT_ROOT, "resultados", "02_cnn_bilstm_autoencoder")
 OUTPUT_DIR_V4 = OUTPUT_DIR  # script unificado: artefatos v3 e v4 no mesmo diretorio
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 print(f"\nCaminhos: PROJECT_ROOT={PROJECT_ROOT}\n  BASE_DIR={BASE_DIR}")
@@ -172,7 +172,7 @@ MIN_FEATURES_EXCEED_COEF = 0.05  # fracao de features esperadas acima do P95
 MIN_FEATURES_EXCEED = 10  # anterior: 1 (causava FP excessivos com P95)
 # Caminho para checkpoint a carregar (None = treinar do zero)
 RESUME_FROM_CHECKPOINT = os.path.join(
-    PROJECT_ROOT, "resultados", "results_cnn_lstm_anomaly",
+    PROJECT_ROOT, "resultados", "02_cnn_bilstm_autoencoder",
     "checkpoints", "checkpoint_epoch_100.pth"
 )
 

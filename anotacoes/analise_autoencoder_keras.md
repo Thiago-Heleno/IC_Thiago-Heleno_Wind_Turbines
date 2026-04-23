@@ -1,5 +1,8 @@
 # Analise Tecnica - wind_turbine_autoencoder_keras_pipeline.ipynb
 
+> **Resultados salvos em:** [`resultados/03_keras_mlp_autoencoder/`](../resultados/03_keras_mlp_autoencoder/)
+> **Metricas padronizadas:** [`resultados/03_keras_mlp_autoencoder/metricas.json`](../resultados/03_keras_mlp_autoencoder/metricas.json)
+
 ## Objetivo
 
 Construir um pipeline end-to-end de deteccao de anomalias em SCADA com:
@@ -212,7 +215,7 @@ Formula implementada:
 
 Diretorio:
 
-- resultados/results_keras_pipeline
+- resultados/03_keras_mlp_autoencoder
 
 Principais arquivos:
 

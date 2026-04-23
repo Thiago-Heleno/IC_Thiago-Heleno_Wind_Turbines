@@ -1,0 +1,32 @@
+{
+  "notebook": "wind_turbine_cnn_lstm_paper",
+  "codigo_fonte": "notebooks/wind_turbine_cnn_lstm_paper.ipynb",
+  "paradigma": "supervisionado",
+  "modelo": "CNN + LSTM + CNN-LSTM (PyTorch)",
+  "dataset": "CARE_To_Compare Wind Farm C",
+  "data_execucao": null,
+  "status": "pendente - artefatos serao gerados na primeira execucao do notebook",
+
+  "configuracao_planejada": {
+    "split": "por evento (sem sobreposicao)",
+    "split_counts": {"treino": 40, "validacao": 8, "teste": 10},
+    "undersampling": {"escopo": "apenas treino", "mantem_distribuicao": "val e teste"}
+  },
+
+  "artefatos_esperados": {
+    "modelos": ["cnn_lstm_model.pth", "cnn_model.pth", "lstm_model.pth"],
+    "scaler": "scaler.npz",
+    "relatorio_completo": "results.json"
+  },
+
+  "metricas_teste": {
+    "CNN":      {"precision": null, "recall": null, "f1": null, "auc_roc": null},
+    "LSTM":     {"precision": null, "recall": null, "f1": null, "auc_roc": null},
+    "CNN-LSTM": {"precision": null, "recall": null, "f1": null, "auc_roc": null}
+  },
+
+  "notas": [
+    "Rodar notebook/script para popular metricas e gerar artefatos.",
+    "Apos execucao: atualizar data_execucao, preencher metricas, mover status para 'concluido'."
+  ]
+}

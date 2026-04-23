@@ -88,7 +88,7 @@ DATASETS_DIR = os.path.join(BASE_DIR, "datasets")
 EVENT_INFO_PATH = os.path.join(BASE_DIR, "event_info.csv")
 FEATURE_DESC_PATH = os.path.join(BASE_DIR, "feature_description.csv")
 
-ARTIFACTS_DIR = os.path.join(str(PROJECT_ROOT), "resultados", "results_keras_pipeline")
+ARTIFACTS_DIR = os.path.join(str(PROJECT_ROOT), "resultados", "03_keras_mlp_autoencoder")
 os.makedirs(ARTIFACTS_DIR, exist_ok=True)
 
 N_OPTUNA_TRIALS_AE = int(os.environ.get("N_OPTUNA_TRIALS_AE", "50"))

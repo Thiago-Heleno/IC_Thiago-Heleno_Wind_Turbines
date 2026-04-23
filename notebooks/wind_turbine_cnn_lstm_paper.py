@@ -1081,7 +1081,7 @@ plt.tight_layout(); plt.show()
 # In[ ]:
 
 
-save_dir = "../resultados/results_cnn_lstm_paper"
+save_dir = "../resultados/01_cnn_lstm_supervisionado"
 os.makedirs(save_dir, exist_ok=True)
 
 torch.save(model.state_dict(), os.path.join(save_dir, "cnn_lstm_model.pth"))

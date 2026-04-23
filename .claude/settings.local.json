@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(node generate.js)",
+      "Bash(ls -lh \"C:\\\\Users\\\\tibis\\\\OneDrive\\\\Desktop\\\\IC_WIND_THIAGO\\\\slides\"/*.pptx)",
+      "Bash(python ../scripts/office/soffice.py --headless --convert-to pdf wind_turbine_anomaly_detection.pptx)",
+      "Bash(where soffice:*)",
+      "Bash(where pdftoppm:*)",
+      "Bash(where libreoffice:*)",
+      "Bash(dir \"C:\\\\Program Files\\\\LibreOffice\\\\program\\\\soffice.exe\")",
+      "Bash(dir \"C:\\\\Program Files \\(x86\\)\\\\LibreOffice\\\\program\\\\soffice.exe\")",
+      "Bash(python -m markitdown wind_turbine_anomaly_detection.pptx)",
+      "Bash(pip install:*)"
+    ]
+  }
+}
