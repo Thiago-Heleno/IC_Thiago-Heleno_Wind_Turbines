@@ -40,6 +40,8 @@ Informacoes importantes do README do CARE incorporadas ao pipeline:
 | `wind_turbine_cnn_lstm_paper.ipynb` | `resultados/01_cnn_lstm_supervisionado/` | Supervisionado |
 | `wind_turbine_anomaly_detection_v4.ipynb` | `resultados/02_cnn_bilstm_autoencoder/` | Semi-supervisionado |
 | `wind_turbine_autoencoder_keras_pipeline.ipynb` | `resultados/03_keras_mlp_autoencoder/` | Semi-supervisionado |
+| `wind_turbine_classifier_induced_failure.ipynb` | `resultados/04_classifier_induced_failure/` | Supervisionado + Falha Induzida |
+| `wind_turbine_autoencoder_induced_failure.ipynb` | `resultados/05_autoencoder_induced_failure/` | Semi-supervisionado + Falha Induzida |
 
 Cada subpasta contem `metricas.json` (schema uniforme) e `README.md` proprio. Comparacao agregada em [resultados/metricas_consolidadas.csv](resultados/metricas_consolidadas.csv).
 
