@@ -1,0 +1,8 @@
+{
+  "standard_p95": 0.6996122598648071,
+  "induced_p95": 0.8435684442520142,
+  "adaptive": 1.2539063661775436,
+  "gamma": 0.749080237694725,
+  "base_induced_p50": 0.5048261284828186,
+  "best_threshold_name": "Induced (P95 induced)"
+}

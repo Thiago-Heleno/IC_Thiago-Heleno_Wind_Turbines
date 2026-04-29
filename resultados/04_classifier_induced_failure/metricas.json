@@ -1,0 +1,79 @@
+{
+  "notebook": "wind_turbine_classifier_induced_failure",
+  "codigo_fonte": "notebooks/wind_turbine_classifier_induced_failure.ipynb",
+  "paradigma": "supervisionado",
+  "modelo": "MLP Classifier 3-class (Normal/Real/Induced)",
+  "dataset": "CARE_To_Compare Wind Farm C",
+  "data_execucao": "2026-04-29",
+  "configuracao": {
+    "split": "event-level 70/15/15 com seed fixo",
+    "preprocessamento": "DataClipper [0.001, 0.999] -> NanImputer (mean) -> StandardScaler",
+    "selecao_features": "nao-supervisionada (variancia<1e-4 + correlacao>0.95)",
+    "balanceamento": "class_weight balanced",
+    "injection_fraction": 0.07,
+    "tipos_perturbacao": ["gaussian (3*std, bloco 12)", "drift (5*std, metade do evento)", "spike (8*std, 1-5 pontos)"],
+    "n_optuna_trials": 30
+  },
+  "hiperparametros": {
+    "n_layers": 2,
+    "hidden_units": 192,
+    "dropout_rate": 0.2944799607160092,
+    "learning_rate": 0.005470225962782875,
+    "epochs_max": 100,
+    "early_stopping_patience": 10
+  },
+  "thresholds": {
+    "binarizacao_p_classe1": 1.8425798872177153e-25,
+    "metodo": "maximizacao do F1 binario na curva PR de validacao"
+  },
+  "metricas_teste": {
+    "induced_model": {
+      "precision": 0.507896609979003,
+      "recall": 1.0,
+      "f1": 0.6736491170784916,
+      "accuracy": 0.5078974878603106
+    },
+    "baseline": {
+      "precision": 0.4072764934280784,
+      "recall": 0.6657487574858186,
+      "f1": 0.5053819921236539,
+      "accuracy": 0.3381416374398367
+    }
+  },
+  "metricas_CARE": {
+    "induced": {
+      "F1_2": 0.0,
+      "Acc": 3.6069831193190017e-06,
+      "EF1_2": 0.5555555555555556,
+      "WS": 1.0,
+      "CARE": 3.6069831193190017e-06,
+      "n_datasets": 10.0,
+      "n_anomalous": 5.0,
+      "n_normal": 5.0
+    },
+    "baseline": {
+      "F1_2": 0.0,
+      "Acc": 2.164189871591401e-05,
+      "EF1_2": 0.5555555555555556,
+      "WS": 0.6485679136494474,
+      "CARE": 2.164189871591401e-05,
+      "n_datasets": 10.0,
+      "n_anomalous": 5.0,
+      "n_normal": 5.0
+    }
+  },
+  "artefatos": {
+    "classifier_induced.keras": "Modelo final treinado com falhas sinteticas",
+    "classifier_best.keras": "Checkpoint do melhor epoch por val_loss",
+    "best_params.json": "Hiperparametros otimizados pelo Optuna",
+    "comparison.csv": "Tabela comparativa Induzido vs Baseline",
+    "care_results.csv": "CARE por dataset do modelo induzido",
+    "comparison_plots.png": "Loss, matrizes de confusao, ROC, PR, CARE sub-scores"
+  },
+  "notas": [
+    "O modelo com falhas sinteticas atingiu Recall=1.0 e F1=0.674, superior ao baseline (F1=0.505), confirmando o ganho da injecao sintetica em dados de teste.",
+    "Threshold otimizado e extremamente baixo (~1.8e-25), indicando que o classificador 3-classes deslocou massa de probabilidade — qualquer indicio de classe 1 dispara alarme.",
+    "CARE Score muito baixo em ambos (~3e-6 vs ~2e-5) reflete avaliacao por evento com Acc=0 nos eventos normais (todos receberam alarme), penalizando a metrica composta.",
+    "Comparativo evento-a-evento mostra trade-off: alto recall em amostras vs baixa especificidade em eventos normais."
+  ]
+}

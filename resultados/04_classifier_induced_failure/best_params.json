@@ -1,0 +1,6 @@
+{
+  "n_layers": 2,
+  "hidden_units": 192,
+  "dropout_rate": 0.2944799607160092,
+  "learning_rate": 0.005470225962782875
+}

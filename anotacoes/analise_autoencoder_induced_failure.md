@@ -234,6 +234,65 @@ Ambos os notebooks usam as mesmas utilidades (`induced_failure_utils.py`) e o me
 | Requer labels no treino | Sim (anomalias reais) | Nao (treina so com normais) |
 | Threshold | Unico (otimizado na PR curve) | Tres alternativas comparadas |
 
+## Resultados Obtidos (execucao 2026-04-29)
+
+### Hiperparametros otimos (Optuna AE, 30 trials)
+
+| HP | Valor |
+|----|-------|
+| n_layers | 1 |
+| code_size | 57 |
+| learning_rate | 2.28e-3 |
+| decay_rate | 0.9704 |
+
+### Thresholds calibrados
+
+| Threshold | Valor |
+|-----------|-------|
+| Standard (P95 normal) | 0.6996 |
+| Induced (P95 induzido) | 0.8436 |
+| Adaptive (P50_ind + gamma) | 1.2539 |
+| gamma otimizado | 0.7491 |
+| base_induced_p50 | 0.5048 |
+
+### Metricas por amostra (teste)
+
+| Threshold | Precision | Recall | F1 | Accuracy |
+|-----------|-----------|--------|-----|----------|
+| Standard (P95) | 0.7136 | **0.1724** | **0.2777** | 0.5594 |
+| Induced (P95 induzido) | 0.7893 | 0.0704 | 0.1292 | 0.5340 |
+| Adaptive (P50_ind+gamma) | **0.8326** | 0.0205 | 0.0400 | 0.5167 |
+
+### CARE Score (58 datasets, 27 anomalos / 31 normais)
+
+| Threshold | F1_2 | Acc | EF1_2 | WS | **CARE** |
+|-----------|------|-----|-------|-----|----------|
+| Standard (P95) | 0.0 | 0.927 | 0.670 | 0.188 | 0.5424 |
+| **Induced (P95 induzido)** | 0.0 | **0.980** | **0.680** | 0.086 | **0.5453** |
+| Adaptive | 0.0 | 0.996 | 0.632 | 0.034 | 0.5315 |
+
+> **Melhor threshold por CARE: Induced (P95 induzido)** com CARE=0.5453.
+
+### Interpretacao
+
+- Trade-off precision/recall confirmado: ao subir o threshold (Standard -> Induced -> Adaptive), precision sobe (0.71 -> 0.79 -> 0.83) e recall cai (0.17 -> 0.07 -> 0.02).
+- **Acc por evento normal cresce monotonicamente** com o threshold (0.93 -> 0.98 -> 0.996), validando a hipotese de que a calibracao por induzidas reduz falsos positivos.
+- **WS (alarme precoce) cai conforme threshold sobe**: Standard alarma cedo em mais eventos (WS=0.19), Adaptive raramente alarma (WS=0.03).
+- O **Induced threshold** vence porque equilibra alta Acc em normais com EF1_2 ainda razoavel (0.68); e o ponto de maximo da combinacao CARE = (F1_2 + WS + EF1_2 + 2*Acc)/5.
+- F1_2=0 em todos: F-beta com beta=0.5 e criterios estritos do CARE produzem zero quando recall amostral por evento e baixo, mesmo com EF1_2 razoavel.
+
+### Comparacao com notebook 03 (Keras AE)
+
+| Aspecto | NB05 (Induced) | NB03 (Keras AE adaptativo) |
+|---------|----------------|----------------------------|
+| Threshold | P95 induzido | RMSE_pred + gamma (regressao) |
+| Precision (amostra) | 0.79 | 0.023 |
+| Recall (amostra) | 0.07 | 0.88 |
+| CARE | 0.5453 | 0.6993 |
+| Acc por evento normal | 0.98 | 0.14 |
+
+NB05 trabalha em regime conservador (poucos alarmes, alta precisao), enquanto NB03 trabalha agressivo (muito alarme, alto recall). Sao pontos opostos da curva ROC; ensemble dos dois e linha de pesquisa natural.
+
 ## Pontos Importantes para a Reuniao
 
 - O autoencoder e treinado em regime **nao-supervisionado** — nao usa nenhuma label de anomalia no treino.

@@ -12,3 +12,13 @@ wind_turbine_anomaly_detection_v4,semi-supervisionado,CNN-BiLSTM-Attention AE,v4
 wind_turbine_anomaly_detection_v4,semi-supervisionado,CNN-BiLSTM-Attention AE + XGBoost,v4 XGBoost,teste,0.0,0.0,0.0,0.74288,,,,,,,2026-04-09,colapso em teste
 wind_turbine_anomaly_detection_v4,semi-supervisionado,CNN-BiLSTM-Attention AE + XGBoost,v4 XGBoost+K=5,teste,0.0,0.0,0.0,,,,,,,,2026-04-09,
 wind_turbine_autoencoder_keras_pipeline,semi-supervisionado,Dense MLP AE + Optuna,threshold adaptativo,58 datasets,,,,,,0.77383,0.39277,0.89888,0.65714,0.69929,2026-04-09,metricas CARE benchmark
+wind_turbine_classifier_induced_failure,supervisionado,MLP Classifier 3-class,Modelo Induzido,teste,0.50790,1.00000,0.67365,,,0.50790,,,,,2026-04-29,injecao 7% falhas sinteticas
+wind_turbine_classifier_induced_failure,supervisionado,MLP Classifier 3-class,Baseline (sem inducao),teste,0.40728,0.66575,0.50538,,,0.33814,,,,,2026-04-29,sem falhas sinteticas
+wind_turbine_classifier_induced_failure,supervisionado,MLP Classifier 3-class,Induzido,10 datasets,,,,,,3.6e-06,0.0,0.55556,1.00000,3.6e-06,2026-04-29,CARE evento - colapso especificidade
+wind_turbine_classifier_induced_failure,supervisionado,MLP Classifier 3-class,Baseline,10 datasets,,,,,,2.16e-05,0.0,0.55556,0.64857,2.16e-05,2026-04-29,CARE evento - baseline
+wind_turbine_autoencoder_induced_failure,semi-supervisionado,MLP AE + Induced Calib,Standard (P95),teste,0.71360,0.17242,0.27774,,,0.55939,,,,,2026-04-29,
+wind_turbine_autoencoder_induced_failure,semi-supervisionado,MLP AE + Induced Calib,Induced (P95 induzido),teste,0.78931,0.07037,0.12922,,,0.53402,,,,,2026-04-29,melhor por CARE
+wind_turbine_autoencoder_induced_failure,semi-supervisionado,MLP AE + Induced Calib,Adaptive (P50_ind+gamma),teste,0.83255,0.02049,0.04000,,,0.51672,,,,,2026-04-29,maior precisao
+wind_turbine_autoencoder_induced_failure,semi-supervisionado,MLP AE + Induced Calib,Standard (P95),58 datasets,,,,,,0.92695,0.0,0.67039,0.18780,0.54242,2026-04-29,CARE evento
+wind_turbine_autoencoder_induced_failure,semi-supervisionado,MLP AE + Induced Calib,Induced (P95 induzido),58 datasets,,,,,,0.98013,0.0,0.68027,0.08588,0.54528,2026-04-29,CARE evento - melhor
+wind_turbine_autoencoder_induced_failure,semi-supervisionado,MLP AE + Induced Calib,Adaptive (P50_ind+gamma),58 datasets,,,,,,0.99556,0.0,0.63218,0.03435,0.53153,2026-04-29,CARE evento

@@ -1,0 +1,107 @@
+{
+  "notebook": "wind_turbine_autoencoder_induced_failure",
+  "codigo_fonte": "notebooks/wind_turbine_autoencoder_induced_failure.ipynb",
+  "paradigma": "semi-supervisionado",
+  "modelo": "MLP Autoencoder + Induced Failure Calibration",
+  "dataset": "CARE_To_Compare Wind Farm C",
+  "data_execucao": "2026-04-29",
+  "configuracao": {
+    "split": "split temporal CARE (train_test) + 80/20 calibracao temporal",
+    "preprocessamento": "DataClipper [0.001, 0.999] -> NanImputer (mean) -> StandardScaler",
+    "selecao_features": "nao-supervisionada (variancia<1e-4 + correlacao>0.95)",
+    "treino_ae": "exclusivamente em dados normais",
+    "injection_fraction": 0.07,
+    "tipos_perturbacao": ["gaussian (3*std, bloco 12)", "drift (5*std, metade do evento)", "spike (8*std, 1-5 pontos)"],
+    "n_optuna_trials_ae": 30,
+    "n_optuna_trials_gamma": 30
+  },
+  "hiperparametros": {
+    "n_layers": 1,
+    "code_size": 57,
+    "learning_rate": 0.002280173638878435,
+    "decay_rate": 0.9704127570745289,
+    "epochs_max": 200,
+    "early_stopping_patience": 10
+  },
+  "thresholds": {
+    "Standard (P95)": 0.6996122598648071,
+    "Induced (P95 induced)": 0.8435684442520142,
+    "Adaptive (P50_ind+gamma)": 1.2539063661775436,
+    "gamma": 0.749080237694725,
+    "base_induced_p50": 0.5048261284828186
+  },
+  "best_threshold": {
+    "name": "Induced (P95 induced)",
+    "value": 0.8435684442520142,
+    "criterio": "maior CARE Score entre os tres"
+  },
+  "metricas_teste": {
+    "Standard (P95)": {
+      "precision": 0.7136025504782146,
+      "recall": 0.17242486102016974,
+      "f1": 0.2777404378082702,
+      "accuracy": 0.5593901392813888
+    },
+    "Induced (P95 induced)": {
+      "precision": 0.7893145161290323,
+      "recall": 0.07036937179832839,
+      "f1": 0.12921858239128642,
+      "accuracy": 0.5340192268873637
+    },
+    "Adaptive (P50_ind+gamma)": {
+      "precision": 0.8325508607198748,
+      "recall": 0.020490698301428956,
+      "f1": 0.039996992707315236,
+      "accuracy": 0.5167162898667743
+    }
+  },
+  "metricas_CARE": {
+    "Standard (P95)": {
+      "F1_2": 0.0,
+      "Acc": 0.9269543497727188,
+      "EF1_2": 0.6703910614525139,
+      "WS": 0.18779736372120864,
+      "CARE": 0.5424194249438321,
+      "n_datasets": 58.0,
+      "n_anomalous": 27.0,
+      "n_normal": 31.0
+    },
+    "Induced (P95 induced)": {
+      "F1_2": 0.0,
+      "Acc": 0.9801336255954991,
+      "EF1_2": 0.6802721088435374,
+      "WS": 0.08588437503601662,
+      "CARE": 0.5452847470141104,
+      "n_datasets": 58.0,
+      "n_anomalous": 27.0,
+      "n_normal": 31.0
+    },
+    "Adaptive (P50_ind+gamma)": {
+      "F1_2": 0.0,
+      "Acc": 0.995562698684591,
+      "EF1_2": 0.632183908045977,
+      "WS": 0.03434902186933937,
+      "CARE": 0.5315316654568998,
+      "n_datasets": 58.0,
+      "n_anomalous": 27.0,
+      "n_normal": 31.0
+    }
+  },
+  "artefatos": {
+    "autoencoder_induced.keras": "Modelo final treinado",
+    "autoencoder_best.keras": "Checkpoint do melhor epoch",
+    "best_params.json": "Hiperparametros Optuna do AE",
+    "threshold_params.json": "Valores dos tres thresholds e gamma",
+    "comparison.csv": "Comparacao dos tres thresholds",
+    "care_results.csv": "CARE por dataset do melhor threshold",
+    "care_summary.csv": "CARE agregado do melhor threshold",
+    "comparison_plots.png": "Loss do AE, distribuicao RMSE, serie temporal, matrizes de confusao, CARE sub-scores"
+  },
+  "notas": [
+    "Trade-off claro entre os tres thresholds: maior threshold -> maior precision, menor recall.",
+    "Threshold Induzido (P95 induced) vence pelo CARE devido a Acc maior em eventos normais (0.98 vs 0.93 do Standard), embora F1 amostral seja pior.",
+    "Threshold Adaptativo atinge precisao=0.83 e Acc=0.996 em eventos normais, mas recall=0.02 sacrifica deteccao em eventos anomalos.",
+    "F1_2=0 em todos os thresholds reflete a metrica F-beta=0.5 de eventos individuais com criterios estritos do benchmark.",
+    "CARE final entre 0.53-0.55 e comparavel ao notebook 03 Keras (CARE=0.699), com compromisso especificidade vs recall diferente."
+  ]
+}

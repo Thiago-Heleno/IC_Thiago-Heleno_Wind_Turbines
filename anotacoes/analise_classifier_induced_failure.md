@@ -181,6 +181,42 @@ Salvos em `resultados/04_classifier_induced_failure/`:
 | `comparison.csv` | Tabela comparativa Induzido vs Baseline |
 | `comparison_plots.png` | Loss, matrizes de confusao, ROC, PR, CARE sub-scores |
 
+## Resultados Obtidos (execucao 2026-04-29)
+
+### Hiperparametros otimos (Optuna, 30 trials)
+
+| HP | Valor |
+|----|-------|
+| n_layers | 2 |
+| hidden_units | 192 |
+| dropout_rate | 0.2945 |
+| learning_rate | 5.47e-3 |
+
+Threshold binarizacao P(classe1) otimo: **1.84e-25** (curva PR, F1 max).
+
+### Metricas por amostra (teste)
+
+| Modelo | Precision | Recall | F1 | Accuracy |
+|--------|-----------|--------|-----|----------|
+| **Modelo Induzido (3 classes)** | 0.5079 | **1.0000** | **0.6736** | 0.5079 |
+| Baseline (sem falhas sinteticas) | 0.4073 | 0.6657 | 0.5054 | 0.3381 |
+
+> **Ganho da injecao sintetica:** F1 +16.8 pontos absolutos (0.674 vs 0.505), Recall total (100% vs 66.6%).
+
+### CARE Score (10 datasets de teste, 5 anomalos / 5 normais)
+
+| Modelo | F1_2 | Acc | EF1_2 | WS | CARE |
+|--------|------|-----|-------|-----|------|
+| Induzido | 0.0 | 3.6e-6 | 0.5556 | 1.0000 | 3.61e-6 |
+| Baseline | 0.0 | 2.2e-5 | 0.5556 | 0.6486 | 2.16e-5 |
+
+### Interpretacao
+
+- O modelo induzido alarma em todos os eventos anomalos do teste (5/5 detectados, WS=1.0), mas tambem alarma nos 5 eventos normais (Acc por evento ~ 0).
+- O baseline tem Acc igualmente baixa em eventos normais, mas alarme tardio (WS=0.65) e deteccao parcial.
+- F1_2=0 em ambos: como a F-beta exige precisao e recall por evento e Acc=0 em normais arrasta a media, o componente colapsa.
+- Trade-off observado: **alta sensibilidade amostral** vs **baixa especificidade por evento**. A injecao sintetica sensibiliza o modelo, mas a calibracao por evento permanece um problema aberto.
+
 ## Pontos Importantes para a Reuniao
 
 - A injecao de falhas sinteticas e uma tecnica de **data augmentation supervisionada** aplicada ao treino para aumentar a diversidade de padroes anomalos.

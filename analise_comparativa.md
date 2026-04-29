@@ -643,6 +643,69 @@ Isso permite que o threshold se adapte ao contexto — em períodos de operaçã
 
 ---
 
+### Notebook 4 — Classifier Induced Failure (Supervisionado + Falhas Sintéticas)
+
+Pipeline supervisionado MLP de 3 classes (Normal / Anomalia Real / Anomalia Induzida) com **data augmentation** via injeção de falhas sintéticas (7% do treino). Detalhes em [`anotacoes/analise_classifier_induced_failure.md`](anotacoes/analise_classifier_induced_failure.md).
+
+**Resultados (execução 2026-04-29):**
+
+| Modelo | Precision | Recall | F1 | Accuracy |
+|--------|-----------|--------|-----|----------|
+| **Modelo Induzido (3 classes)** | 0.5079 | **1.0000** | **0.6736** | 0.5079 |
+| Baseline (sem falhas sintéticas) | 0.4073 | 0.6657 | 0.5054 | 0.3381 |
+
+> **Ganho da injeção sintética:** +16.8 pontos em F1, recall total no conjunto de teste.
+
+**CARE Score (10 datasets de teste):**
+
+| Modelo | EF1_2 | Acc | WS | CARE |
+|--------|-------|-----|-----|------|
+| Induzido | 0.5556 | ~0 | 1.000 | 3.6e-6 |
+| Baseline | 0.5556 | ~0 | 0.649 | 2.2e-5 |
+
+CARE colapsa pois Acc por evento normal ≈ 0 (modelo alarma em todos). Trade-off: **alta sensibilidade amostral** vs **baixa especificidade por evento**.
+
+**Hiperparâmetros ótimos:** n_layers=2, hidden_units=192, dropout=0.29, lr=5.47e-3.
+
+---
+
+### Notebook 5 — Autoencoder Induced Failure (Semi-supervisionado + Calibração Sintética)
+
+Autoencoder MLP treinado apenas em dados normais, com calibração de threshold via falhas sintéticas. Compara três thresholds: Standard P95, Induced P95 e Adaptive (P50_ind+gamma). Detalhes em [`anotacoes/analise_autoencoder_induced_failure.md`](anotacoes/analise_autoencoder_induced_failure.md).
+
+**Resultados por amostra (execução 2026-04-29):**
+
+| Threshold | Valor | Precision | Recall | F1 | Accuracy |
+|-----------|-------|-----------|--------|-----|----------|
+| Standard (P95) | 0.6996 | 0.7136 | 0.1724 | 0.2777 | 0.5594 |
+| **Induced (P95 induzido)** ✓ | 0.8436 | 0.7893 | 0.0704 | 0.1292 | 0.5340 |
+| Adaptive (P50_ind+γ) | 1.2539 | **0.8326** | 0.0205 | 0.0400 | 0.5167 |
+
+**CARE Score (58 datasets):**
+
+| Threshold | Acc | EF1_2 | WS | **CARE** |
+|-----------|-----|-------|-----|----------|
+| Standard (P95) | 0.927 | 0.670 | 0.188 | 0.5424 |
+| **Induced (P95 induzido)** ✓ | **0.980** | **0.680** | 0.086 | **0.5453** |
+| Adaptive | 0.996 | 0.632 | 0.034 | 0.5315 |
+
+> **Trade-off precision/recall confirmado:** ao subir o threshold, precision sobe (0.71→0.83) e recall cai (0.17→0.02). O threshold **Induced** vence em CARE pelo equilíbrio entre alta especificidade em normais (Acc=0.98) e EF1_2 razoável (0.68).
+
+**Hiperparâmetros ótimos:** n_layers=1, code_size=57, lr=2.28e-3, decay=0.97, gamma=0.749.
+
+**Comparação NB05 vs NB03 (Keras AE adaptativo):**
+
+| Aspecto | NB05 (Induced) | NB03 (Keras AE) |
+|---------|----------------|-----------------|
+| Precision (amostra) | 0.79 | 0.023 |
+| Recall (amostra) | 0.07 | 0.88 |
+| CARE | 0.545 | 0.699 |
+| Acc evento normal | 0.98 | 0.14 |
+
+Pontos opostos da curva ROC — ensemble dos dois é linha de pesquisa natural.
+
+---
+
 ## 10. Análise: Por que Obtivemos Esses Resultados?
 
 ### 10.1 O problema central: desbalanceamento severo

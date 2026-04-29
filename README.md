@@ -124,5 +124,7 @@ Arquivo de dependencias em notebooks/requirements.txt.
 - [anotacoes/analise_cnn_lstm_paper.md](anotacoes/analise_cnn_lstm_paper.md) — supervisionado CNN/LSTM/CNN-LSTM
 - [anotacoes/analise_cnn_bilstm_autoencoder_v4.md](anotacoes/analise_cnn_bilstm_autoencoder_v4.md) — autoencoder CNN-BiLSTM-Attention v4
 - [anotacoes/analise_autoencoder_keras.md](anotacoes/analise_autoencoder_keras.md) — autoencoder Keras + Optuna + CARE Score
-- [analise_comparativa.md](analise_comparativa.md) — comparacao integrada dos tres pipelines
+- [anotacoes/analise_classifier_induced_failure.md](anotacoes/analise_classifier_induced_failure.md) — classifier MLP 3-class com falhas induzidas
+- [anotacoes/analise_autoencoder_induced_failure.md](anotacoes/analise_autoencoder_induced_failure.md) — autoencoder MLP com calibracao por falhas induzidas
+- [analise_comparativa.md](analise_comparativa.md) — comparacao integrada dos pipelines
 - [resultados/README.md](resultados/README.md) — indice de resultados e metricas padronizadas
