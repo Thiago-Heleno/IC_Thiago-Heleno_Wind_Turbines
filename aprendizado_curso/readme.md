@@ -1,0 +1,1 @@
+Curso de redes neurais assistido: https://www.youtube.com/watch?v=kzFqGhK8Q2s&list=PLxI8Can9yAHfB2om9dqhsrsjRAf-YJaro

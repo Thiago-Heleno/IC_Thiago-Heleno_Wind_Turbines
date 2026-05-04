@@ -177,8 +177,8 @@ Configuracao principal:
 - Loss: MAE (L1Loss).
 - Otimizador: Adam, lr=1e-4.
 - Scheduler: ReduceLROnPlateau (factor=0.5, patience=3).
-- Epochs maximas: 30.
-- Early stopping: patience=8.
+- Epochs maximas: 100.
+- Early stopping: patience=15.
 - Batch size: 64.
 - Gradient clipping: max_norm=1.0.
 
